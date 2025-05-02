@@ -1,0 +1,292 @@
+ID,Name,Type,MainCategory,SubCategory
+40001,Lamp,light,ETC,Light Source
+40002,Lantern,light,ETC,Light Source
+40003,Lantern Oil,other,ETC,Consumable
+40004,Magic Lantern,light,ETC,Light Source
+40005,Candle,light,ETC,Light Source
+40006,Pine Wand,wand,ETC,Magic Tool
+40007,Ebony Wand,wand,ETC,Magic Tool
+40008,Maple Wand,wand,ETC,Magic Tool
+40009,Wand of Blink,wand,ETC,Magic Tool
+40010,Lesser Healing Potion,potion,ETC,Recovery
+40011,Healing Potion,potion,ETC,Recovery
+40012,Greater Healing Potion,potion,ETC,Recovery
+40013,Haste Potion,potion,ETC,Buff
+40014,Potion of Bravery,potion,ETC,Buff
+40015,Potion of Mana,potion,ETC,Recovery
+40016,Potion of Wisdom,potion,ETC,Buff
+40017,Cure Poison Potion,potion,ETC,Recovery
+40018,Greater Haste Potion,potion,ETC,Buff
+40019,Condensed Lesser Healing Potion,potion,ETC,Recovery
+40020,Condensed Healing Potion,potion,ETC,Recovery
+40021,Condensed Greater Healing Potion,potion,ETC,Recovery
+40022,Ancient Lesser Healing Potion,potion,ETC,Recovery
+40023,Ancient Healing Potion,potion,ETC,Recovery
+40024,Ancient Greater Healing Potion,potion,ETC,Recovery
+40025,Blinding Potion,potion,ETC,Debuff
+40026,Banana Juice,potion,ETC,Recovery
+40027,Orange Juice,potion,ETC,Recovery
+40028,Apple Juice,potion,ETC,Recovery
+40029,Ivory Tower Healing Potion,potion,ETC,Recovery
+40030,Ivory Tower Haste Potion,potion,ETC,Buff
+40031,Devil's Blood,potion,ETC,Special
+40032,Bless of Eva,potion,ETC,Buff
+40033,Elixer (STR),potion,ETC,Stat
+40034,Elixer (CON),potion,ETC,Stat
+40035,Elixer (DEX),potion,ETC,Stat
+40036,Elixer (INT),potion,ETC,Stat
+40037,Elixer (WIS),potion,ETC,Stat
+40038,Elixer (CHA),potion,ETC,Stat
+40039,Wine,potion,ETC,Consumable
+40040,Whiskey,potion,ETC,Consumable
+40041,Scale of Mermaid,potion,ETC,Special
+40042,Potion of Mental Acuity,potion,ETC,Buff
+40043,Rabbit Liver,potion,ETC,Material
+40044,Diamond,gem,ETC,Gem
+40045,Ruby,gem,ETC,Gem
+40046,Sapphire,gem,ETC,Gem
+40047,Emerald,gem,ETC,Gem
+40048,High Quality Diamond,gem,ETC,Gem
+40049,High Quality Ruby,gem,ETC,Gem
+40050,High Quality Sapphire,gem,ETC,Gem
+40051,High Quality Emerald,gem,ETC,Gem
+40052,Highest Quality Diamond,gem,ETC,Gem
+40053,Highest Quality Ruby,gem,ETC,Gem
+40054,Highest Quality Sapphire,gem,ETC,Gem
+40055,Highest Quality Emerald,gem,ETC,Gem
+40056,Meat,food,ETC,Food
+40057,Floating Eye Meat,food,ETC,Food
+40058,Brown Piece of Bread,potion,ETC,Food
+40059,Egg,food,ETC,Food
+40060,Carrot,food,ETC,Food
+40061,Lemon,food,ETC,Food
+40062,Banana,food,ETC,Food
+40063,Valentines Day chocolate,food,ETC,Food
+40064,Apple,food,ETC,Food
+40065,Candy,food,ETC,Food
+40066,Rice-cake,potion,ETC,Food
+40067,Mugwort rice-cake,potion,ETC,Food
+40068,Elven Wafer,potion,ETC,Food
+40069,Orange,food,ETC,Food
+40070,Fruit of Evolution,other,ETC,Special
+40071,Burnt Piece of Bread,potion,ETC,Food
+40072,Pizza,food,ETC,Food
+40073,Easter Basket,food,ETC,Food
+40074,Scroll of Enchant Armor,scroll,ETC,Enhancement
+40075,Scroll of Destroy Armor,scroll,ETC,Enhancement
+40076,Ancient Scroll,scroll,ETC,Quest
+40077,Ancients' Alchemy Scroll,scroll,ETC,Quest
+40078,Ancients' Magic Scroll,scroll,ETC,Quest
+40079,Scroll of Escape,scroll,ETC,Teleport
+40080,Scroll of Return - Gludin Town,scroll,ETC,Teleport
+40081,Scroll of Escape to Giran,scroll,ETC,Teleport
+40082,Scroll of Return - Singing Island,scroll,ETC,Teleport
+40083,Teleport - Lastabad,scroll,ETC,Teleport
+40084,Teleport - Diad Fortress,scroll,ETC,Teleport
+40085,Scroll of Return - Talking Island,scroll,ETC,Teleport
+40086,Scroll of Mass Teleport,scroll,ETC,Teleport
+40087,Scroll of Enchant Weapon,scroll,ETC,Enhancement
+40088,Scroll of Polymorph,scroll,ETC,Transform
+40089,Scroll of Resurrection,scroll,ETC,Recovery
+40090,Blank Scroll (Level 1),scroll,ETC,Crafting
+40091,Blank Scroll (Level 2),scroll,ETC,Crafting
+40092,Blank Scroll (Level 3),scroll,ETC,Crafting
+40093,Blank Scroll (Level 4),scroll,ETC,Crafting
+40094,Blank Scroll (Level 5),scroll,ETC,Crafting
+40095,Ivory Tower Scroll of Return,scroll,ETC,Teleport
+40096,Ivory Tower Scroll of Polymorph,scroll,ETC,Transform
+40097,Ivory Tower Scroll of Curse Removal,scroll,ETC,Recovery
+40098,Ivory Tower Scroll of Identify,scroll,ETC,Utility
+40099,Ivory Tower Teleport Scroll,scroll,ETC,Teleport
+40100,Scroll of Teleportation,scroll,ETC,Teleport
+40101,Scroll of Return - Hidden Valley,scroll,ETC,Teleport
+40102,Scroll of Return - Aden City,scroll,ETC,Teleport
+40103,Scroll of Return - Ivory Tower Town,scroll,ETC,Teleport
+40104,TOI Teleport Scroll 11F,scroll,ETC,Teleport
+40105,TOI Teleport Scroll 21F,scroll,ETC,Teleport
+40106,TOI Teleport Scroll 31F,scroll,ETC,Teleport
+40107,TOI Teleport Scroll 41F,scroll,ETC,Teleport
+40108,TOI Teleport Scroll 51F,scroll,ETC,Teleport
+40109,TOI Teleport Scroll 61F,scroll,ETC,Teleport
+40110,TOI Teleport Scroll 71F,scroll,ETC,Teleport
+40111,TOI Teleport Scroll 81F,scroll,ETC,Teleport
+40112,TOI Teleport Scroll 91F,scroll,ETC,Teleport
+40113,TOI Teleport Scroll 100F,scroll,ETC,Teleport
+40114,Scroll of Return - Elven Forest,scroll,ETC,Teleport
+40115,Scroll of Return - Woodbec Village,scroll,ETC,Teleport
+40116,Scroll of Return - Werldern Town,scroll,ETC,Teleport
+40117,Scroll of Return - Silver Knight Town,scroll,ETC,Teleport
+40118,Scroll of Return - Recluse Village,scroll,ETC,Teleport
+40119,Scroll of Curse Removal,scroll,ETC,Recovery
+40120,Scroll of Return - Resistance Village,scroll,ETC,Teleport
+40121,Teleport - Diad Fortress,scroll,ETC,Teleport
+40122,Scroll of Return - Kent Village,scroll,ETC,Teleport
+40123,Scroll of Return - Heine City,scroll,ETC,Teleport
+40124,Scroll of Return - Pledge House,scroll,ETC,Teleport
+40125,Scroll of Return - Orctown,scroll,ETC,Teleport
+40126,Scroll of Identify,scroll,ETC,Utility
+40127,Scroll of Enchant Armor Illusion,scroll,ETC,Enhancement
+40128,Scroll of Enchant Weapon Illusion,scroll,ETC,Enhancement
+40129,Gian's Scroll,scroll,ETC,Quest
+40130,Kalba's Scroll,scroll,ETC,Quest
+40131,Totem of Gandi,totem,ETC,Quest
+40132,Totem of Neruga,totem,ETC,Quest
+40133,Totem of Duda-Mara,totem,ETC,Quest
+40134,Totem of Rova,totem,ETC,Quest
+40135,Totem of Atuba,totem,ETC,Quest
+40136,Shot Firework,firecracker,ETC,Event
+40137,Shot Mega Bam Firework,firecracker,ETC,Event
+40138,High Quality Shot Mega Bam Firework,firecracker,ETC,Event
+40139,Deep Blue Level 2 Firework,firecracker,ETC,Event
+40140,Deep Blue Sparkler,firecracker,ETC,Event
+40141,Deep Blue Firework,firecracker,ETC,Event
+40142,Deep Blue Heart Firework,firecracker,ETC,Event
+40143,Red Level 2 Firework,firecracker,ETC,Event
+40144,Red Sparkler,firecracker,ETC,Event
+40145,Red Firework,firecracker,ETC,Event
+40146,Red Heart Firework,firecracker,ETC,Event
+40147,Blue Level 2 Circle Firework,firecracker,ETC,Event
+40148,Blue Level 2 Firework,firecracker,ETC,Event
+40149,Blue Snow Flower Firework,firecracker,ETC,Event
+40150,Blue Sparkler,firecracker,ETC,Event
+40151,Blue Circle Firework,firecracker,ETC,Event
+40152,Blue Firework,firecracker,ETC,Event
+40153,Blue Heart Firework,firecracker,ETC,Event
+40154,Christmas Firecracker,firecracker,ETC,Event
+40155,Yellow Level 2 Circle Firework,firecracker,ETC,Event
+40156,Yellow Level 2 Firework,firecracker,ETC,Event
+40157,Yellow Snow Flower Firework,firecracker,ETC,Event
+40158,Yellow Sparkler,firecracker,ETC,Event
+40159,Yellow Circle Firework,firecracker,ETC,Event
+40160,Yellow Firework,firecracker,ETC,Event
+40161,Yellow Heart Firework,firecracker,ETC,Event
+40162,Heart of Golem,material,ETC,Material
+40163,Golden Key,other,ETC,Quest
+40164,TechnicalDocument(ShockStun),spellbook,ETC,Skill
+40165,TechnicalDocument(ReductionArmor),spellbook,ETC,Skill
+40166,TechnicalDocument(BounceAttack),spellbook,ETC,Skill
+40167,Old Leather Pouch,treasure_box,ETC,Treasure
+40168,Old Silk Pouch,treasure_box,ETC,Treasure
+40169,Heart of Drake,material,ETC,Material
+40170,Spellbook(Fireball),spellbook,ETC,Skill
+40171,Spellbook(EnchantDex),spellbook,ETC,Skill
+40172,Spellbook(WeaponBreak),spellbook,ETC,Skill
+40173,Spellbook(VampiricTouch),spellbook,ETC,Skill
+40174,Spellbook(Slow),spellbook,ETC,Skill
+40175,Spellbook(EarthJail),spellbook,ETC,Skill
+40176,Spellbook(CounterMagic),spellbook,ETC,Skill
+40177,Spellbook(Meditate),spellbook,ETC,Skill
+40178,Spellbook(Paralyze),spellbook,ETC,Skill
+40179,Spellbook(CallLightning),spellbook,ETC,Skill
+40180,Spellbook(GreaterHeal),spellbook,ETC,Skill
+40181,Spellbook(TameMonster),spellbook,ETC,Skill
+40182,Spellbook(RemoveCurse),spellbook,ETC,Skill
+40183,Spellbook(ConeOfCold),spellbook,ETC,Skill
+40184,Spellbook(ManaDrain),spellbook,ETC,Skill
+40185,Spellbook(Darkness),spellbook,ETC,Skill
+40186,Spellbook(CreateZombie),spellbook,ETC,Skill
+40187,Spellbook(EnchantStr),spellbook,ETC,Skill
+40188,Spellbook(Haste),spellbook,ETC,Skill
+40189,Spellbook(Cancel),spellbook,ETC,Skill
+40190,Spellbook(Eruption),spellbook,ETC,Skill
+40191,Spellbook(SunBurst),spellbook,ETC,Skill
+40192,Spellbook(Weakness),spellbook,ETC,Skill
+40193,Spellbook(BlessWeapon),spellbook,ETC,Skill
+40194,Spellbook(HealPledge),spellbook,ETC,Skill
+40195,Spellbook(IceLance),spellbook,ETC,Skill
+40196,Spellbook(Summon),spellbook,ETC,Skill
+40197,Spellbook(HolyWalk),spellbook,ETC,Skill
+40198,Spellbook(Tornado),spellbook,ETC,Skill
+40199,Spellbook(GreaterHaste),spellbook,ETC,Skill
+40200,Spellbook(Berzerkers),spellbook,ETC,Skill
+40201,Spellbook(Disease),spellbook,ETC,Skill
+40202,Spellbook(FullHeal),spellbook,ETC,Skill
+40203,Spellbook(Firewall),spellbook,ETC,Skill
+40204,Spellbook(Blizzard),spellbook,ETC,Skill
+40205,Spellbook(Invisibility),spellbook,ETC,Skill
+40206,Spellbook(Resurrection),spellbook,ETC,Skill
+40207,Spellbook(Earthquake),spellbook,ETC,Skill
+40208,Spellbook(LifeStream),spellbook,ETC,Skill
+40209,Spellbook(Silence),spellbook,ETC,Skill
+40210,Spellbook(LightningStorm),spellbook,ETC,Skill
+40211,Spellbook(FogOfSleeping),spellbook,ETC,Skill
+40212,Spellbook(Polymorph),spellbook,ETC,Skill
+40213,Spellbook(ImmuneToHarm),spellbook,ETC,Skill
+40214,Spellbook(MassTeleport),spellbook,ETC,Skill
+40215,Spellbook(FireStorm),spellbook,ETC,Skill
+40216,Spellbook(DecayPotion),spellbook,ETC,Skill
+40217,Spellbook(CounterDetection),spellbook,ETC,Skill
+40218,Spellbook(CreateMagicalWeapon),spellbook,ETC,Skill
+40219,Spellbook(MeteorStrike),spellbook,ETC,Skill
+40220,Spellbook(GreaterResurrection),spellbook,ETC,Skill
+40221,Spellbook(MassSlow),spellbook,ETC,Skill
+40222,Spellbook(Destroy),spellbook,ETC,Skill
+40223,Spellbook(AbsoluteBarrier),spellbook,ETC,Skill
+40224,Spellbook(AdvanceSpirit),spellbook,ETC,Skill
+40225,Spellbook(FreezingBlizzard),spellbook,ETC,Skill
+40226,Spellbook(TrueTarget),spellbook,ETC,Skill
+40227,Spellbook(Glowing Aura),spellbook,ETC,Skill
+40228,Spellbook(CallPledgeMember),spellbook,ETC,Skill
+40229,Spellbook(Shining Aura),spellbook,ETC,Skill
+40230,Spellbook(Brave Aura),spellbook,ETC,Skill
+40231,Spellbook(Teleport to Pledge Member),spellbook,ETC,Skill
+40232,Spirit Crystal(ResistMagic),spellbook,ETC,Skill
+40233,Spirit Crystal(BodytoMind),spellbook,ETC,Skill
+40234,Spirit Crystal(TeleportToMotherTree),spellbook,ETC,Skill
+40235,Spirit Crystal(ClearMind),spellbook,ETC,Skill
+40236,Spirit Crystal(ResistElemental),spellbook,ETC,Skill
+40237,Spirit Crystal(ReturnToNature),spellbook,ETC,Skill
+40238,Spirit Crystal(BloodtoSoul),spellbook,ETC,Skill
+40239,Spirit Crystal(ProtectionFromElemental),spellbook,ETC,Skill
+40240,Spirit Crystal(TripleShot),spellbook,ETC,Skill
+40241,Spirit Crystal(ElementalFallDown),spellbook,ETC,Skill
+40242,Spirit Crystal(EraseMagic),spellbook,ETC,Skill
+40243,Spirit Crystal(SummonLesserElement),spellbook,ETC,Skill
+40244,Spirit Crystal(AreaOfSilence),spellbook,ETC,Skill
+40245,Spirit Crystal(SummonGreaterElement),spellbook,ETC,Skill
+2,DICE_DAGGER,dagger,WEAPON,Dagger
+13,FINGER_OF_DEATH,staff,WEAPON,Staff
+36,EVAS_SCORN,sword,WEAPON,Sword
+44,SWORD_OF_ANCIENT_ELF,sword,WEAPON,Sword
+47,SWORD_OF_SILENCE,sword,WEAPON,Sword
+54,SWORD_OF_KURTZ,sword,WEAPON,Sword
+58,SWORD_OF_DEATH_KNIGHT,sword,WEAPON,Sword
+61,EXECUTION_SWORD_OF_FIDELITY,sword,WEAPON,Sword
+76,EDORYU_OF_RONDE,edoryu,WEAPON,Edoryu
+86,EDORYU_OF_RED_SHADOW,edoryu,WEAPON,Edoryu
+121,STAFF_OF_ICE_QUEEN,staff,WEAPON,Staff
+126,STAFF_OF_MANA,staff,WEAPON,Staff
+127,STEEL_STAFF_OF_MANA,staff,WEAPON,Staff
+134,CRYSTALIZED_STAFF,staff,WEAPON,Staff
+160,CLAW_OF_SAVAGE_KING,claw,WEAPON,Claw
+190,SAYHAS_BOW,bow,WEAPON,Bow
+191,BOW_OF_COLD_MASTRY,bow,WEAPON,Bow
+200002,C_DICE_DAGGER,dagger,WEAPON,Dagger
+203,SWORD_OF_VARLOK,sword,WEAPON,Sword
+205,LONGBOW_OF_MOON,bow,WEAPON,Bow
+247,SWORD_OF_ORDEAL,sword,WEAPON,Sword
+248,SWORD_OF_ORDEAL_B,sword,WEAPON,Sword
+249,SWORD_OF_ORDEAL_C,sword,WEAPON,Sword
+259,DAGGER_OF_MAGIC_POWER,dagger,WEAPON,Dagger
+262,GREAT_SWORD_OF_DESTRUCTION,sword,WEAPON,Sword
+265,THEBES_EDORYU,edoryu,WEAPON,Edoryu
+266,THEBES_SWORD,sword,WEAPON,Sword
+267,THEBES_BOW,bow,WEAPON,Bow
+268,THEBES_STAFF,staff,WEAPON,Staff
+450000,THORS_HAMMER,blunt,WEAPON,Blunt
+450001,PAAGRIOS_HATRED,sword,WEAPON,Sword
+450002,MAPHRS_RETRIBUTION,staff,WEAPON,Staff
+450003,ORCISH_BUME_SMACHE,blunt,WEAPON,Blunt
+40749,PET_ITEM_40749,equipment,PET,Equipment
+40750,PET_ITEM_40750,equipment,PET,Equipment
+40751,PET_ITEM_40751,equipment,PET,Equipment
+40752,PET_ITEM_40752,equipment,PET,Equipment
+40756,PET_ITEM_40756,equipment,PET,Equipment
+40757,PET_ITEM_40757,equipment,PET,Equipment
+40758,PET_ITEM_40758,equipment,PET,Equipment
+40761,PET_ITEM_40761,equipment,PET,Equipment
+40762,PET_ITEM_40762,equipment,PET,Equipment
+40763,PET_ITEM_40763,equipment,PET,Equipment
+40764,PET_ITEM_40764,equipment,PET,Equipment
+40765,PET_ITEM_40765,equipment,PET,Equipment
+40766,PET_ITEM_40766,equipment,PET,Equipment 

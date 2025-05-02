@@ -1,0 +1,110 @@
+Location,X,Y,MapId,Category
+Gludio,32612,32734,4,Town
+Giran,33442,32797,4,Town
+SI,32782,32756,68,Town
+TI,32580,32931,0,Town
+Aden,33966,33253,4,Town
+Oren,34061,32276,4,Town
+WW,32621,33169,4,Town
+HV,32671,32836,69,Town
+MT,33054,32323,4,Town
+Kent,33050,32780,4,Town
+Heine,33612,33268,4,Town
+Werldern,33705,32504,4,Town
+SKT,33080,33392,4,Town
+GMShop,33079,33402,4,Town
+IT,32771,32822,75,Town
+SC,32854,32907,304,Town
+OT,32715,32448,4,Town
+Gunter,32669,32790,3,Town
+Gypsy,33978,32927,4,Town
+Bludika,32739,32801,305,Town
+Dicarding,32766,32797,77,Town
+Silveria,32841,32856,1000,Town
+Behimous,32779,32887,1001,Town
+AdenGT,34090,33261,4,Castle
+Oasis,32861,33255,4,Field
+ToS Entrance,34266,32189,4,Field
+CC1,32746,32787,72,Dungeon
+CC2,32755,32871,73,Dungeon
+CC3,32731,32854,74,Dungeon
+DVC1,32740,32777,30,Dungeon
+DVC2,32760,32781,31,Dungeon
+DVC3,32709,32818,32,Dungeon
+DVC4,32669,32869,33,Dungeon
+DVC5,32746,32802,35,Dungeon
+DVC6,32663,32846,36,Dungeon
+DVC7,32668,32867,37,Dungeon
+MLC3,32798,32754,9,Dungeon
+MLC4,32764,32773,10,Dungeon
+MLC5,32729,32724,11,Dungeon
+MLC6,32805,32725,12,Dungeon
+MLC7,32730,32726,13,Dungeon
+AC1,32738,32799,49,Dungeon
+AC2,32740,32802,50,Dungeon
+AC3,32764,32828,51,Dungeon
+IT5,32772,32805,79,Dungeon
+IT6,32748,32802,80,Dungeon
+IT7,32766,32849,81,Dungeon
+IT8,32742,32798,82,Dungeon
+GC2,32809,32793,54,Dungeon
+GC3,32734,32728,55,Dungeon
+GC4,32770,32730,56,Dungeon
+SKTC2,32802,32815,26,Dungeon
+SKTC3,32807,32812,27,Dungeon
+SKTC4,32799,32798,28,Dungeon
+KC1,32720,33088,240,Dungeon
+KC2,32759,32884,241,Dungeon
+KC3,32808,32918,242,Dungeon
+KC4,32742,32857,243,Dungeon
+WC1,32810,32723,23,Dungeon
+WC2,32809,32812,24,Dungeon
+DI,32633,32817,303,Dungeon
+FI,32828,32848,70,Dungeon
+PI,32422,33074,440,Dungeon
+ToI11,32631,32935,111,Tower of Insolence
+ToI21,32631,32935,121,Tower of Insolence
+ToI31,32631,32935,131,Tower of Insolence
+ToI41,32631,32935,141,Tower of Insolence
+ToI51,32669,32814,151,Tower of Insolence
+ToI61,32669,32814,161,Tower of Insolence
+ToI71,32669,32814,171,Tower of Insolence
+ToI81,32669,32814,181,Tower of Insolence
+ToI91,32669,32814,191,Tower of Insolence
+ToI10,32800,32800,110,Tower of Insolence
+ToI20,32800,32800,120,Tower of Insolence
+ToI30,32800,32800,130,Tower of Insolence
+ToI40,32800,32800,140,Tower of Insolence
+ToI50,32796,32796,150,Tower of Insolence
+ToI60,32720,32821,160,Tower of Insolence
+ToI70,32720,32821,170,Tower of Insolence
+ToI80,32724,32822,180,Tower of Insolence
+ToI90,32722,32827,190,Tower of Insolence
+ToI100,32731,32856,200,Tower of Insolence
+Valakas,32723,32796,67,Dragon Lair
+Fafurion,32769,32833,65,Dragon Lair
+Lindvior,34035,33011,4,Dragon Lair
+Antharas,32668,32867,37,Dragon Lair
+Hell,32701,32777,666,Special
+GMRoom,32737,32796,99,Special
+Thebes,32633,32877,780,Special Area
+Thebes Temple,32742,32803,781,Special Area
+Great Cavern Resistance Area,32549,32801,400,Special Area
+Diad Fortress,32723,32851,320,Special Area
+Recluse Village,32601,32908,400,Special Area
+Mineral Dungeon,32733,32985,330,Special Area
+Temple of Shadow 1F,32657,32896,522,Temple
+Temple of Shadow 2F,32700,32896,523,Temple
+Temple of Shadow 3F,32691,32894,524,Temple
+Temple of Shadow Outland,32676,32960,521,Temple
+Abyss Lake,32803,33049,420,Special Area
+Lastavard Dungeon 1F,32761,32822,307,Dungeon
+Lastavard Dungeon 2F,32750,32824,308,Dungeon
+Lastavard Dungeon 3F,32757,32836,309,Dungeon
+Ancient 1F,32730,32860,2000,Ancient Dungeon
+Ancient 2F,32731,32800,2001,Ancient Dungeon
+Ancient 3F,32812,32872,2002,Ancient Dungeon
+Ancient 4F,32736,32811,2003,Ancient Dungeon
+Oum Dungeon,32737,32900,310,Dungeon
+Pirate Island,32422,33074,440,Special Area
+Front Gate of Lastavard,32658,32853,450,Special Area 

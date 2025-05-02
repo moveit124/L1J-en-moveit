@@ -1,0 +1,94 @@
+---
+description: CRITICAL - Mandatory coding standards and architectural guidelines that must be strictly followed for all Lineage Classic 363 development.
+globs: 
+alwaysApply: true
+---
+# Lineage Classic 363 - AI Interaction Guidelines
+
+## Contextual Documentation Approach
+
+1. **CORE RULE**: Code generation and modifications must align with existing architectural patterns and coding principles.
+
+2. **CORE RULE**: Always read `/prompts/workflow.md` after reading this main rule document to understand proper implementation procedures.
+
+3. **Documentation Guidelines**:
+   - **For New Features or Complex Changes**: Always consult `/prompts/component_map.md` first to understand system architecture
+   - **For Targeted Fixes**: Review relevant documentation specific to the subsystem being modified
+   - **For Refactoring Tasks**: Reference both component map and `/prompts/refactoring/` documentation
+   - **For Testing Tasks**: Consult `/prompts/testing/` documentation for testing patterns
+   - **For Deployment and Server Tasks**: Refer to `/prompts/workflow.md` for server maintenance and deployment procedures
+   
+4. **When Documentation Review is Critical**:
+   - When working with unfamiliar subsystems
+   - When implementing cross-cutting changes
+   - When modifying core game mechanics
+   - When dealing with network protocols or persistence
+   - When deploying changes to the production server
+   - When integrating contributions from collaborators
+
+## Core Principles of Perfect Code
+
+When maintaining or extending the Lineage Classic 363 codebase, all code generation and modifications MUST adhere to these principles:
+
+### 1. Clarity and Readability
+
+- **Self-documenting Code**: Write code that is readable and self-explanatory, with meaningful variable and method names
+- **Consistent Formatting**: All Java code must follow established code conventions and formatting guidelines
+- **Appropriate Comments**: Use comments to explain "what" and "why"
+- **Avoid Magic Numbers**: Replace hardcoded values with named constants or configuration parameters
+
+### 2. Modularity and Separation of Concerns
+
+- **Single Responsibility Principle**: Each class and method should have exactly one responsibility
+- **Interface Segregation**: Create focused interfaces rather than large, monolithic ones
+- **Dependency Inversion**: High-level modules should not depend on low-level modules; both should depend on abstractions
+- **Encapsulation**: Implementation details must be hidden behind well-defined interfaces
+
+### 3. Error Handling and Robustness
+
+- **Defensive Programming**: Always validate inputs and handle edge cases gracefully
+- **Meaningful Exceptions**: Use specific exception types with informative messages
+- **Fail Fast**: Detect errors as early as possible to prevent cascading failures
+- **Proper Logging**: All significant operations and errors must be logged at appropriate levels
+
+### 4. Performance Considerations
+
+- **Resource Management**: Carefully manage resources like database connections and file handles
+- **Optimize Critical Paths**: Pay special attention to performance in frequently executed code paths
+- **Caching Strategy**: Implement appropriate caching for frequently accessed, rarely changing data
+- **Thread Safety**: Ensure concurrency issues are properly addressed, especially for shared game state
+
+### 5. Game-Specific Best Practices
+
+- **Synchronization Strategy**: Game state updates must be properly synchronized to prevent race conditions
+- **Packet Handling**: All network packet handling must include thorough validation to prevent exploits
+- **Stateful Operations**: Ensure operations that modify character or world state are atomic and consistent
+- **Data Persistence**: Implement safe saving mechanisms with appropriate transaction management
+
+### 6. Code Evolution Principles
+
+- **Incremental Refactoring**: Prefer incremental improvements over massive rewrites
+- **Technical Debt Tracking**: Document areas requiring refactoring as they're identified
+- **Backward Compatibility**: Maintain compatibility with existing client protocol where possible
+- **Test Coverage**: Maintain or improve test coverage when modifying code
+
+### 7. Documentation Requirements
+
+- **Method Documentation**: All public methods must have Javadoc comments
+- **Class Documentation**: All classes must have explanatory headers describing their purpose
+- **Change Documentation**: All significant changes must be documented in commit messages and/or changelogs
+- **Architecture Updates**: Update architecture documentation when making structural changes
+
+## Implementation Guidance
+
+1. **For Simple Fixes**: You may proceed with minimal documentation review if:
+   - The change is isolated to a single, well-understood component
+   - The change doesn't alter existing APIs or behaviors
+   - The change follows all core principles listed above
+
+2. **For All Other Changes**: Review relevant documentation first to ensure:
+   - Architectural alignment with existing systems
+   - Consistency with established patterns
+   - Proper integration with dependent systems
+
+The goal is not documentation for its own sake, but ensuring that all code changes maintain or improve the quality, maintainability, and performance of the Lineage Classic 363 codebase. 

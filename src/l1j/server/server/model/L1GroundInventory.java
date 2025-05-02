@@ -1,0 +1,217 @@
+package l1j.server.server.model;
+
+import java.util.*;
+import java.util.concurrent.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import l1j.server.server.datatables.NpcTable;
+import l1j.server.server.datatables.SpawnTable;
+import l1j.server.server.encryptions.IdFactory;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.serverpackets.S_DropItem;
+import l1j.server.server.serverpackets.S_RemoveObject;
+import l1j.server.server.templates.L1Npc;
+
+public class L1GroundInventory extends L1Inventory {
+    private static final long serialVersionUID = 1L;
+    private static final int SLIME_SPAWN_TIME = 15 * 60 * 1000; // 15 minutes
+    private static final int SLIME_RADIUS = 15;
+    private static final int GRID_SIZE = 20;
+    private static final ScheduledExecutorService _scheduler = Executors.newScheduledThreadPool(1);
+    private static final Random random = new Random();
+
+    private static final Map<Short, Map<String, List<L1ItemInstance>>> gridSpawnCandidates = new ConcurrentHashMap<>();
+    private static final Map<Integer, Long> itemDropTimes = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> droppedItemCounts = new ConcurrentHashMap<>();
+    private static final Set<String> activeSlimeKeys = ConcurrentHashMap.newKeySet();
+    private static final int MAX_ITEMS_PER_LOCATION = 50;
+
+    public L1GroundInventory(int objectId, int x, int y, short map) {
+        setId(objectId);
+        setX(x);
+        setY(y);
+        setMap(map);
+        L1World.getInstance().addVisibleObject(this);
+    }
+
+    @Override
+    public void onPerceive(L1PcInstance perceivedFrom) {
+        for (L1ItemInstance item : getItems()) {
+            if (!perceivedFrom.knownsObject(item)) {
+                perceivedFrom.addKnownObject(item);
+                perceivedFrom.sendPackets(new S_DropItem(item));
+            }
+        }
+    }
+
+    public void insertItem(L1ItemInstance item) {
+        for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(item)) {
+            pc.sendPackets(new S_DropItem(item));
+            pc.addKnownObject(item);
+        }
+
+        if (isSpawnedItem(item)) {
+            String locationKey = item.getX() + "," + item.getY() + "," + item.getMapId();
+            int currentItemCount = droppedItemCounts.getOrDefault(locationKey, 0);
+
+            if (currentItemCount >= MAX_ITEMS_PER_LOCATION) {
+                return;
+            }
+
+            droppedItemCounts.put(locationKey, currentItemCount + 1);
+            return;
+        }
+
+        String gridKey = getGridKey(item.getX(), item.getY());
+        gridSpawnCandidates.computeIfAbsent(item.getMapId(), k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(gridKey, k -> new CopyOnWriteArrayList<>())
+                .add(item);
+
+        itemDropTimes.put(item.getId(), System.currentTimeMillis());
+    }
+
+    @Override
+    public void updateItem(L1ItemInstance item) {
+        for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(item)) {
+            pc.sendPackets(new S_DropItem(item));
+        }
+    }
+
+    private static String getGridKey(int x, int y) {
+        return (x / GRID_SIZE) + "," + (y / GRID_SIZE);
+    }
+
+    private static void spawnSlime(int x, int y, int mapId, String gridKey) {
+        String slimeKey = mapId + ":" + gridKey;
+        if (activeSlimeKeys.contains(slimeKey)) return;
+
+        int[] mobOptions = {45023, 70984, 45025, 45060 }; // Boar, Cow, Gremlin, Slime
+        int slimeId = mobOptions[random.nextInt(mobOptions.length)];
+        int distance = 6 + random.nextInt(3);
+        int dx = 0, dy = 0;
+        int direction = random.nextInt(8);
+
+        switch (direction) {
+            case 0: dx = distance; dy = 0; break;
+            case 1: dx = distance; dy = distance; break;
+            case 2: dx = 0; dy = distance; break;
+            case 3: dx = -distance; dy = distance; break;
+            case 4: dx = -distance; dy = 0; break;
+            case 5: dx = -distance; dy = -distance; break;
+            case 6: dx = 0; dy = -distance; break;
+            case 7: dx = distance; dy = -distance; break;
+        }
+
+        L1Npc slimeNpc = NpcTable.getInstance().getTemplate(slimeId);
+        if (slimeNpc == null) return;
+
+        L1MonsterInstance slime = new L1MonsterInstance(slimeNpc) {
+            @Override
+            public void deleteMe() {
+                super.deleteMe();
+                activeSlimeKeys.remove(slimeKey);
+            }
+        };
+
+        slime.setId(IdFactory.getInstance().nextId());
+        slime.setX(x + dx);
+        slime.setY(y + dy);
+        slime.setMap((short) mapId);
+        slime.setHeading(random.nextInt(8));
+
+        L1World.getInstance().storeObject(slime);
+        L1World.getInstance().addVisibleObject(slime);
+        activeSlimeKeys.add(slimeKey);
+    }
+
+    @Override
+    public void deleteItem(L1ItemInstance item) {
+        for (L1PcInstance pc : L1World.getInstance().getRecognizePlayer(item)) {
+            pc.sendPackets(new S_RemoveObject(item));
+            pc.removeKnownObject(item);
+        }
+
+        _items.remove(item);
+        if (_items.isEmpty()) {
+            L1World.getInstance().removeVisibleObject(this);
+        }
+
+        short mapId = item.getMapId();
+        String gridKey = getGridKey(item.getX(), item.getY());
+        Map<String, List<L1ItemInstance>> mapGrids = gridSpawnCandidates.get(mapId);
+        if (mapGrids != null) {
+            List<L1ItemInstance> list = mapGrids.get(gridKey);
+            if (list != null) list.remove(item);
+        }
+        itemDropTimes.remove(item.getId());
+    }
+
+    private boolean isSpawnedItem(L1ItemInstance item) {
+        if (item.getItem().getItemId() == 40515) {
+            if (item.getX() >= ElementalStoneGenerator.getFirstX() && item.getX() <= ElementalStoneGenerator.getLastX() &&
+                item.getY() >= ElementalStoneGenerator.getFirstY() && item.getY() <= ElementalStoneGenerator.getLastY()) {
+                for (L1Object obj : L1World.getInstance().getVisibleObjects(item, 3)) {
+                    if (obj instanceof L1ItemInstance) {
+                        L1ItemInstance nearbyItem = (L1ItemInstance) obj;
+                        if (nearbyItem.getItem().getItemId() == 40515) {
+                            return true;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        for (L1Spawn spawn : SpawnTable.getInstance().get_spawntable().values()) {
+            if (spawn.getLocX() == item.getX() && spawn.getLocY() == item.getY() && spawn.getMapId() == item.getMapId()) {
+                if (spawn.getNpcId() == item.getItem().getItemId()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static {
+        _scheduler.scheduleAtFixedRate(() -> {
+            long currentTime = System.currentTimeMillis();
+
+            for (Map.Entry<Short, Map<String, List<L1ItemInstance>>> mapEntry : gridSpawnCandidates.entrySet()) {
+                short mapId = mapEntry.getKey();
+                Map<String, List<L1ItemInstance>> gridMap = mapEntry.getValue();
+
+                for (Map.Entry<String, List<L1ItemInstance>> gridEntry : gridMap.entrySet()) {
+                    String gridKey = gridEntry.getKey();
+                    List<L1ItemInstance> items = gridEntry.getValue();
+
+                    if (items.isEmpty()) continue;
+
+                    boolean shouldSpawn = false;
+                    for (L1ItemInstance item : items) {
+                        long dropTime = itemDropTimes.getOrDefault(item.getId(), 0L);
+                        if (currentTime - dropTime >= SLIME_SPAWN_TIME) {
+                            shouldSpawn = true;
+                            break;
+                        }
+                    }
+
+                    if (shouldSpawn) {
+                        L1ItemInstance spawnSource = items.get(0);
+                        spawnSlime(spawnSource.getX(), spawnSource.getY(), mapId, gridKey);
+
+                        for (L1ItemInstance item : items) {
+                            itemDropTimes.put(item.getId(), System.currentTimeMillis()); // Reset timer
+                        }
+                    }
+                }
+            }
+        }, 30, 30, TimeUnit.SECONDS);
+    }
+
+    private static Logger _log = LoggerFactory.getLogger(L1GroundInventory.class.getName());
+}

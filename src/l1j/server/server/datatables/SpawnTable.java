@@ -1,0 +1,246 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+package l1j.server.server.datatables;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import l1j.server.Config;
+import l1j.server.L1DatabaseFactory;
+import l1j.server.server.model.L1Spawn;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.random.RandomGenerator;
+import l1j.server.server.random.RandomGeneratorFactory;
+import l1j.server.server.templates.L1Npc;
+import l1j.server.server.utils.NumberUtil;
+import l1j.server.server.utils.PerformanceTimer;
+import l1j.server.server.utils.SQLUtil;
+
+public class SpawnTable {
+	private static Logger _log = LoggerFactory.getLogger(SpawnTable.class.getName());
+
+	private static RandomGenerator _random = RandomGeneratorFactory.newRandom();
+	
+	private static SpawnTable _instance;
+
+	private Map<Integer, L1Spawn> _spawntable = new HashMap<Integer, L1Spawn>();
+
+	private int _highestId;
+
+	public static SpawnTable getInstance() {
+		if (_instance == null) {
+			_instance = new SpawnTable();
+		}
+		return _instance;
+	}
+
+	private SpawnTable() {
+		fillSpawnTable();
+	}
+
+	private void fillSpawnTable() {
+		int spawnCount = 0;
+		java.sql.Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		try {
+			PerformanceTimer timer = new PerformanceTimer();
+			con = L1DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement("SELECT * FROM spawnlist");
+			rs = pstm.executeQuery();
+			L1Spawn spawnDat;
+			L1Npc template1;
+			while (rs.next()) {
+				if (!Config.HALLOWEEN_EVENT) {
+					int npcid = rs.getInt("npc_templateid");
+					if (npcid >= 45166 && npcid <= 45167) {
+						continue;
+					}
+					if (npcid >= 99090 && npcid <= 99117) {
+						continue;
+					}
+				}
+				int npcTemplateId = rs.getInt("npc_templateid");
+				short mapId = rs.getShort("mapid");
+				boolean isErr = false;
+				if (NpcTable.getInstance().getTemplate(npcTemplateId) == null) {
+					// %s はNPCリストに存在しません。
+					isErr = true;
+				}
+				if (MapsTable.getInstance().locationname(mapId) == null) {
+					// %s はマップリストに存在しません。
+					isErr = true;
+				}
+				if (isErr) {
+					continue;
+				}
+				template1 = NpcTable.getInstance().getTemplate(npcTemplateId);
+				int count;
+				if (template1 == null) {
+					_log.warn("mob data for id:" + npcTemplateId + " missing in npc table");
+					spawnDat = null;
+				} else {
+					if (rs.getInt("count") == 0) {
+						continue;
+					}
+					double amount_rate = MapsTable.getInstance()
+							.getMonsterAmount(mapId);
+					count = calcCount(template1, rs.getInt("count"),
+							amount_rate);
+					if (count == 0) {
+						continue;
+					}
+					spawnDat = new L1Spawn(template1);
+					spawnDat.setId(rs.getInt("id"));
+					spawnDat.setAmount(count);
+					spawnDat.setGroupId(rs.getInt("group_id"));
+					spawnDat.setLocX(rs.getInt("locx"));
+					spawnDat.setLocY(rs.getInt("locy"));
+					spawnDat.setRandomx(rs.getInt("randomx"));
+					spawnDat.setRandomy(rs.getInt("randomy"));
+					spawnDat.setLocX1(rs.getInt("locx1"));
+					spawnDat.setLocY1(rs.getInt("locy1"));
+					spawnDat.setLocX2(rs.getInt("locx2"));
+					spawnDat.setLocY2(rs.getInt("locy2"));
+					int heading = rs.getInt("heading");
+					if (heading < 0 || heading > 7) {
+						heading = _random.nextInt(8);
+					}
+					spawnDat.setHeading(heading);
+					spawnDat.setMinRespawnDelay(rs.getInt("min_respawn_delay"));
+					spawnDat.setMaxRespawnDelay(rs.getInt("max_respawn_delay"));
+					spawnDat.setMapId(mapId);
+					spawnDat.setRespawnScreen(rs.getBoolean("respawn_screen"));
+					spawnDat.setMovementDistance(rs.getInt("movement_distance"));
+					spawnDat.setRest(rs.getBoolean("rest"));
+					spawnDat.setSpawnType(rs.getInt("near_spawn"));
+					spawnDat.setTime(SpawnTimeTable.getInstance().get(spawnDat.getId()));
+					spawnDat.setName(NpcTable.getInstance().getTemplate(rs.getInt("npc_templateid")).get_name());
+					
+					// ✅ NEW FIELDS (make sure your table has these columns)
+					spawnDat.setSpawnHome(rs.getInt("spawn_home"));
+					spawnDat.setSpawnHomeRange(rs.getInt("spawn_home_range"));
+					spawnDat.setSpawnHomeCount(rs.getInt("spawn_home_count"));
+					
+					if (count > 1 && spawnDat.getLocX1() == 0) {
+						// 複数かつ固定spawnの場合は、個体数 * 6 の範囲spawnに変える。
+						// ただし範囲が30を超えないようにする
+						int range = Math.min(count * 6, 30);
+						spawnDat.setLocX1(spawnDat.getLocX() - range);
+						spawnDat.setLocY1(spawnDat.getLocY() - range);
+						spawnDat.setLocX2(spawnDat.getLocX() + range);
+						spawnDat.setLocY2(spawnDat.getLocY() + range);
+					}
+					// start the spawning
+					spawnDat.init();
+					spawnCount += spawnDat.getAmount();
+				}
+				get_spawntable().put(new Integer(spawnDat.getId()), spawnDat);
+				if (spawnDat.getId() > _highestId) {
+					_highestId = spawnDat.getId();
+				}
+			}
+			_log.info("loaded mob: " + get_spawntable().size() + " records");
+			System.out.println("loading mobs...OK! " + timer.elapsedTimeMillis() + " ms");
+		} catch (SQLException e) {
+			_log.error("Error loading spawn table", e);
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(pstm);
+			SQLUtil.close(con);
+		}
+		_log.info("loaded all mob: " + spawnCount + " records");
+	}
+
+	public L1Spawn getTemplate(int Id) {
+		return get_spawntable().get(new Integer(Id));
+	}
+
+	public void addNewSpawn(L1Spawn spawn) {
+		_highestId++;
+		spawn.setId(_highestId);
+		get_spawntable().put(new Integer(spawn.getId()), spawn);
+	}
+
+	public static void storeSpawn(L1PcInstance pc, L1Npc npc) {
+		Connection con = null;
+		PreparedStatement pstm = null;
+		try {
+			int count = 1;
+			int randomXY = 12;
+			int minRespawnDelay = 60;
+			int maxRespawnDelay = 120;
+			String note = npc.get_name();
+			con = L1DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement(String.format("INSERT INTO spawnlist SET %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s", 
+				"npc_templateid=?", "note=?", "count=?", "loc_x=?", "loc_y=?", 
+				"random_x=?", "random_y=?", "heading=?",
+				"min_respawn_delay=?", "max_respawn_delay=?", "mapid=?"));
+			pstm.setInt(3, npc.get_npcId());
+			pstm.setString(2, note);
+			pstm.setInt(3, count);
+			pstm.setInt(4, pc.getX());
+			pstm.setInt(5, pc.getY());
+			pstm.setInt(6, randomXY);
+			pstm.setInt(7, randomXY);
+			pstm.setInt(8, pc.getHeading());
+			pstm.setInt(9, minRespawnDelay);
+			pstm.setInt(10, maxRespawnDelay);
+			pstm.setInt(11, pc.getMapId());
+			pstm.execute();
+		} catch (Exception e) {
+			_log.error("Error storing spawn", e);
+		} finally {
+			SQLUtil.close(pstm);
+			SQLUtil.close(con);
+		}
+	}
+
+	private static int calcCount(L1Npc npc, int count, double rate) {
+		if (rate == 0) {
+			return 0;
+		}
+		if (rate == 1 || npc.isAmountFixed()) {
+			return count;
+		} else {
+			return NumberUtil.randomRound((count * rate));
+		}
+	}
+
+	public Map<Integer, L1Spawn> get_spawntable() {
+		return _spawntable;
+	}
+
+	public void set_spawntable(Map<Integer, L1Spawn> _spawntable) {
+		this._spawntable = _spawntable;
+	}
+}

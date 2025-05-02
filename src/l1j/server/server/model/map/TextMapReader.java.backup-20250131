@@ -1,0 +1,248 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+package l1j.server.server.model.map;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import l1j.server.server.datatables.MapsTable;
+
+/**
+ * Text map (maps/*.txt) to read.
+ */
+public class TextMapReader extends MapReader {
+
+	/** For the message log. */
+	private static Logger _log = LoggerFactory			.getLogger(TextMapReader.class.getName());
+
+	/** Map holder. */
+	private static final String MAP_DIR = "./maps/";
+
+	/** MAP_INFO Map number for the position. */
+	public static final int MAPINFO_MAP_NO = 0;
+
+	/** MAP_INFO X coordinate positions for the start. */
+	public static final int MAPINFO_START_X = 1;
+
+	/** MAP_INFO X coordinate positions for the final. */
+	public static final int MAPINFO_END_X = 2;
+
+	/** MAP_INFO Y coordinates for the starting position. */
+	public static final int MAPINFO_START_Y = 3;
+
+	/** MAP_INFO Y coordinates for the starting position. */
+	public static final int MAPINFO_END_Y = 4;
+
+	/**
+	 * Map specified number of text to read the map.
+	 *
+	 * @param mapId
+	 *            Map No.
+	 * @param xSize
+	 *            X Coordinate size
+	 * @param ySize
+	 *            Y Coordinate size
+	 * @return byte[][]
+	 * @throws IOException
+	 */
+	public byte[][] read(final int mapId, final int xSize, final int ySize)
+			throws IOException {
+		_log.info("Reading map " + mapId + " with dimensions " + xSize + "x" + ySize);
+		
+		// Get dimensions from MapsTable for validation
+		int startX = MapsTable.getInstance().getStartX(mapId);
+		int endX = MapsTable.getInstance().getEndX(mapId);
+		int startY = MapsTable.getInstance().getStartY(mapId);
+		int endY = MapsTable.getInstance().getEndY(mapId);
+		
+		// Calculate actual map dimensions
+		int width = (endX - startX) + 1;
+		int height = (endY - startY) + 1;
+		
+		_log.info("Map " + mapId + " calculated dimensions: " + width + "x" + height + 
+		          " (startX=" + startX + ", endX=" + endX + ", startY=" + startY + ", endY=" + endY + ")");
+		
+		// Create array with actual dimensions from database
+		byte[][] map = new byte[height][width];
+		_log.info("Created array with dimensions " + map.length + "x" + map[0].length);
+		
+		// Initialize all values to 0 by default
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				map[y][x] = 0;
+			}
+		}
+		
+		LineNumberReader in = null;
+		try {
+			String mapFile = MAP_DIR + mapId + ".txt";
+			_log.info("Opening map file: " + mapFile);
+			in = new LineNumberReader(new BufferedReader(new FileReader(mapFile)));
+			
+			int y = 0;
+			String line;
+			while ((line = in.readLine()) != null) {
+				// Skip comments and empty lines
+				if (line.trim().length() == 0 || line.startsWith("#")) {
+					continue;
+				}
+				
+				// Stop if we've reached the maximum height
+				if (y >= height) {
+					_log.warn("Map " + mapId + ": Skipping remaining lines as we've reached max height (" + height + ")");
+					break;
+				}
+				
+				StringTokenizer tok = new StringTokenizer(line, ",");
+				int x = 0;
+				
+				// Process each token in the line
+				while (tok.hasMoreTokens() && x < width) {
+					String token = tok.nextToken().trim();
+					try {
+						byte tile = Byte.parseByte(token);
+						map[y][x] = tile;
+					} catch (NumberFormatException e) {
+						_log.warn("Map " + mapId + ": Invalid tile value '" + token + "' at position x=" + x + ", y=" + y + ", using 0");
+						map[y][x] = 0;
+					}
+					x++;
+				}
+				
+				// Fill remaining columns with 0 if line is short
+				while (x < width) {
+					map[y][x] = 0;
+					x++;
+				}
+				
+				y++;
+			}
+			
+			// Fill remaining rows with 0 if file is short
+			while (y < height) {
+				for (int x = 0; x < width; x++) {
+					map[y][x] = 0;
+				}
+				y++;
+			}
+			
+			_log.info("Map " + mapId + ": Successfully read " + y + " rows");
+		} catch (IOException e) {
+			_log.error("Error reading map " + mapId + ": " + e.getMessage(), e);
+			throw e;
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					_log.error("Error closing map file for map " + mapId, e);
+				}
+			}
+		}
+		return map;
+	}
+
+	/**
+	 * Map specified number of text to read the map.
+	 *
+	 * @param id
+	 *            Map No.
+	 * @return L1Map
+	 * @throws IOException
+	 */
+	@Override
+	public L1Map read(final int id) {
+		L1V1Map map = null;
+
+		// Get dimensions from MapsTable
+		int startX = MapsTable.getInstance().getStartX(id);
+		int endX = MapsTable.getInstance().getEndX(id);
+		int startY = MapsTable.getInstance().getStartY(id);
+		int endY = MapsTable.getInstance().getEndY(id);
+		
+		// Calculate actual dimensions
+		int width = (endX - startX) + 1;
+		int height = (endY - startY) + 1;
+		
+		_log.info("Map " + id + " world coordinates - startX: " + startX + ", endX: " + endX + 
+		          ", startY: " + startY + ", endY: " + endY + " (dimensions: " + width + "x" + height + ")");
+
+		try {
+			// Use the actual dimensions from the database
+			byte[][] mapData = this.read(id, width, height);
+			if (mapData != null) {
+				map = new L1V1Map(id,
+								mapData,
+								startX,
+								startY,
+								MapsTable.getInstance().isUnderwater(id),
+								MapsTable.getInstance().isMarkable(id),
+								MapsTable.getInstance().isTeleportable(id),
+								MapsTable.getInstance().isEscapable(id),
+								MapsTable.getInstance().isUseResurrection(id),
+								MapsTable.getInstance().isUsePainwand(id),
+								MapsTable.getInstance().isEnabledDeathPenalty(id),
+								MapsTable.getInstance().isTakePets(id),
+								MapsTable.getInstance().isRecallPets(id),
+								MapsTable.getInstance().isUsableItem(id),
+								MapsTable.getInstance().isUsableSkill(id));
+			}
+		} catch (IOException e) {
+			_log.error("Error reading map " + id + ": " + e.getMessage(), e);
+		}
+		return map;
+	}
+
+	/**
+	 * All text to read the map.
+	 *
+	 * @return Map
+	 * @throws IOException
+	 */
+	@Override
+	public Map<Integer, L1Map> read() throws IOException {
+		Map<Integer, L1Map> maps = new HashMap<Integer, L1Map>();
+
+		// Instead of using a hard coded MAP_INFO, let's pull the data from
+		// The mapstable data
+		for (int mapid : MapsTable.getInstance().getMapIds() ) {
+			try {
+				_log.info("Attempting to load map ID: " + mapid);
+				L1Map map = this.read(mapid);
+				if (map != null) {
+					maps.put(mapid, map);
+				} else {
+					_log.error("Failed to load map ID: " + mapid);
+				}
+			} catch (Exception e) {
+				_log.error("Error loading map ID: " + mapid, e);
+			}
+		}
+		return maps;
+	}
+
+}

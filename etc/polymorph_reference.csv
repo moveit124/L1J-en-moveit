@@ -1,0 +1,129 @@
+# Weapon Equipment Values (WeaponEquip):
+# 0: No weapons allowed
+# 8: Special weapon type
+# 16: Mount weapons only
+# 256: Bow only
+# 751: Basic weapons (sword, dagger, etc)
+# 1080: Spear weapons
+# 1791: All weapons
+# 4095: All items
+#
+# Armor Equipment Values (ArmorEquip):
+# 0: No armor allowed
+# 1: Basic equipment
+# 2: Pet equipment only
+# 32: Limited armor
+# 136: Insect armor
+# 145: Golem armor
+# 545: Troll armor
+# 913: Basic armor
+# 945: Monster armor
+# 954: Demon armor
+# 1027: Event armor
+# 4095: All armor allowed
+#
+# CanUseSkill Values:
+# 0: Cannot use skills
+# 1: Can use skills
+#
+ID,Name,MinLevel,WeaponEquip,ArmorEquip,CanUseSkill,Category
+29,Floating Eye,1,0,0,1,Basic Monster
+95,Shelob,10,0,0,0,Spider Boss
+146,Ungoliant,10,0,0,0,Spider Boss
+938,Beagle,1,0,2,1,Pet
+945,Milkcow,1,0,0,0,Animal
+947,Deer,1,0,0,0,Animal
+979,Wild Boar,1,0,0,1,Animal
+1037,Giant Ant,1,0,136,0,Insect
+1039,Giant Ant Soldier,1,0,136,0,Insect
+1047,Scorpion,15,0,0,0,Monster
+2064,Snowman,1,0,1027,1,Event
+2284,Dark Elf Polymorph,52,256,4095,1,Humanoid
+2323,Orc Scout Polymorph,15,256,4095,1,Humanoid
+2374,Skeleton Polymorph,10,751,4095,1,Undead
+2376,Skeleton Axeman Polymorph,10,1791,4095,1,Undead
+2377,Skeleton Pike Polymorph,10,1791,4095,1,Undead
+2378,Spartoi Polymorph,10,751,4095,1,Undead
+2384,Succubus Morph,40,751,4095,1,Demon
+2385,Yeti Morph,15,751,4095,1,Monster
+2386,Minotaur Morph,15,751,4095,1,Monster
+2387,Giant Morph,15,1791,4095,1,Giant
+3101,Black Knight Chief Morph,51,751,4095,1,Knight
+3102,Great Minotaur Morph,50,1791,4095,1,Monster
+3103,Barlog Morph,52,1791,4095,1,Demon
+3126,Fire Bowman Morph,51,256,4095,1,Archer
+3630,Cyclops,40,751,4095,1,Giant
+3631,Griffon,40,0,32,1,Beast
+3632,Cockatrice,40,0,4095,1,Monster
+3633,Ettin,40,751,4095,1,Giant
+3634,Assassin,45,751,4095,1,Humanoid
+3784,Death Knight,52,751,4095,1,Undead
+3860,Bow Orc,1,256,4095,1,Orc
+3861,Goblin,1,751,913,0,Humanoid
+3862,Kobolds,1,751,913,1,Humanoid
+3863,Dwarf,1,751,4095,1,Humanoid
+3864,Orc Fighter,1,751,4095,1,Orc
+3865,Werewolf,1,751,4095,1,Beast
+3871,Skeleton Archer Polymorph,10,256,4095,1,Undead
+3872,Zombie,10,751,4095,1,Undead
+3873,Ghoul,10,751,4095,1,Undead
+3874,Lycanthrope,10,751,4095,1,Beast
+3875,Ghast,10,751,945,1,Undead
+3876,Bugbear,10,751,945,1,Monster
+3877,Ogre,15,1791,913,1,Giant
+3878,Troll,15,751,545,1,Giant
+3879,Elder,15,751,0,1,Humanoid
+3880,King Bugbear,15,751,945,1,Monster
+3881,Dark Elder,45,751,4095,1,Humanoid
+3882,Necromancer1,45,751,4095,1,Mage
+3883,Necromancer2,45,751,4095,1,Mage
+3884,Necromancer3,45,751,4095,1,Mage
+3885,Necromancer4,45,751,4095,1,Mage
+3886,Lesser Demon,45,751,4095,0,Demon
+3887,Darkelf Carrier,45,1791,4095,0,Humanoid
+3888,Baphomet,50,751,954,1,Demon
+3889,Demon,51,751,4095,1,Demon
+3904,Stone Golem,1,751,145,1,Construct
+3905,Beleth,50,751,954,1,Demon Boss
+3906,Orc,1,751,4095,1,Orc
+3945,Gelatincube,15,751,0,1,Monster
+3950,Middle Oum,15,751,4095,1,Monster
+4000,Knight Vald Morph,1,1791,4095,1,Knight
+4001,Iris Morph,1,1791,4095,1,Special
+4002,Paperman Morph,1,1791,4095,1,Special
+4004,Succubus Queen Morph,1,1791,4095,1,Demon
+4186,Robber Bone,1,751,4095,0,Undead
+4188,Robber Bone Head,1,751,4095,0,Undead
+4190,Robber Bone Soldier,1,256,4095,0,Undead
+4767,Rabbit,1,0,4095,0,Animal
+4769,Carrot Rabbit,1,0,4095,0,Animal
+4917,Darkelf Ranger Morph,45,256,4095,1,Humanoid
+4918,Bandit Bow Morph,40,256,4095,1,Humanoid
+4919,Darkelf Guard Morph,50,256,4095,1,Humanoid
+4920,Elmor General Morph,45,1791,4095,1,Humanoid
+4922,Guardian Armor Morph,50,751,4095,1,Knight
+4923,Black Knight Morph,51,1080,4095,1,Knight
+4924,Darkelf Spear Morph,50,1080,4095,1,Humanoid
+4925,Elmor Soldier Morph,40,1080,4095,1,Humanoid
+4926,Darkelf Wizard Morph,50,751,4095,1,Mage
+4928,High Collie,1,0,2,1,Pet
+4929,High Raccoon,1,0,2,1,Pet
+5645,Halloween Pumpkin,1,4095,4095,1,Event
+5719,Manekineko,1,4095,4095,1,Event
+6002,Spirit of Earth Boss,1,8,0,1,Spirit
+6010,Red Orc,1,0,1,0,Orc
+6034,Priest of Corruption,45,751,4095,1,Mage
+6035,Quest Lesser Demon,45,751,4095,1,Demon
+6080,Princess Horse,1,16,4095,1,Mount
+6089,Drake Morph,1,1791,4095,1,Dragon
+6094,Prince Horse,1,16,4095,1,Mount
+6136,Barlog 52,52,1791,4095,1,Demon
+6137,Death 52,52,751,4095,1,Undead
+6138,Assassin 52,52,751,4095,1,Humanoid
+6139,General 52,52,751,4095,1,Knight
+6140,Darkelf 52,52,256,4095,1,Humanoid
+6267,Neo Black Knight,55,751,4095,1,Knight
+6268,Neo Black Mage,55,751,4095,1,Mage
+6269,Neo Black Scouter,55,256,4095,1,Scout
+6279,Neo Black Assassin,55,751,4095,1,Assassin
+6400,Halloween Jack O Lantern,1,4095,4095,1,Event 
