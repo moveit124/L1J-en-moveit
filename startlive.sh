@@ -18,7 +18,7 @@ fi
 
 # Server command
 # Commented out JMX agent: -javaagent:/opt/SanctuaryOfAden/jmx_prometheus_javaagent-0.16.1.jar=9404:/opt/SanctuaryOfAden/jmx_exporter_config.yaml
-SERVER_CMD="java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -Xlog:gc*:file=/opt/SanctuaryOfAden/log/gc.log:time,uptime,level,tags:filecount=10,filesize=100m -Xms4g -Xmx4g -cp l1jen.jar:lib/* l1j.server.Server"
+SERVER_CMD="java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -Xlog:gc*:file=/opt/SanctuaryOfAden/log/gc.log:time,uptime,level,tags:filecount=10,filesize=100m -Xms6g -Xmx6g -cp l1jen.jar:lib/* l1j.server.Server"
 # SCREEN_NAME="live"
 
 # Check if server is already running
