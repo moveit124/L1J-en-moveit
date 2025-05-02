@@ -83,6 +83,7 @@
 | May 2024 | Startup Script | Updated startlive.sh for systemd | [Your Name] |
 | May 2024 | Systemd Service | Created, enabled, and started lineage.service | [Your Name] |
 | May 2024 | Documentation | Created docs/workflowRez.md and docs/workflowMove.md | [Your Name] |
+| May 2024 | Performance Tuning | Increased Java heap size to 6GB (-Xms6g -Xmx6g) | [Your Name] |
 
 ## Post-Migration Verification
 - [ ] Game server functionality
