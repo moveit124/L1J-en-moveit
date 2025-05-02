@@ -1,0 +1,19 @@
+[Unit]
+Description=Sanctuary Of Aden Game Server
+Documentation=https://github.com/Hunter0240/SanctuaryOfAden
+After=network-online.target mysql.service
+Wants=network-online.target mysql.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/SanctuaryOfAden
+ExecStart=/opt/SanctuaryOfAden/startlive.sh
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target 
