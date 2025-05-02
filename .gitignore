@@ -1,7 +1,6 @@
 l1jen.jar
 /bin
 /log
-/emblem
 *.iml
 *.ipr
 *.iws
@@ -10,3 +9,12 @@ l1jen.jar
 .metadata
 build
 .settings/org.eclipse.core.resources.prefs
+
+# macOS system files
+.DS_Store
+
+# Emblem directory
+emblem/
+
+# Database backups (optional - uncomment if needed)
+# db/*.sql
