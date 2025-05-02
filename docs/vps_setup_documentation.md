@@ -37,10 +37,10 @@
 - [ ] Directory structure setup
 
 ## Service Configuration
-- [ ] Startup script updates
-- [ ] SystemD service creation (if applicable)
-- [ ] Automatic restarts
-- [ ] Log rotation
+- [x] Startup script updates (startlive.sh adapted for systemd)
+- [x] SystemD service creation (lineage.service created and enabled)
+- [x] Automatic restarts (via systemd Restart=on-failure)
+- [ ] Log rotation (systemd journald handles service logs; review `startlive.sh` java0.log rotation if needed)
 
 ## Monitoring Setup
 - [ ] System monitoring
@@ -78,6 +78,11 @@
 | May 2024 | Firewall update | Opened game server ports (2000/tcp, 7777/tcp) | [Your Name] |
 | May 2024 | System update | Rebooted to apply kernel update to 6.8.0-58-generic | [Your Name] |
 | May 2024 | Database Restore | Restored l1jdb_backup.sql to soadb | [Your Name] |
+| May 2024 | Server Config | Updated server.properties for VPS | [Your Name] |
+| May 2024 | Build Tools | Installed ant | [Your Name] |
+| May 2024 | Startup Script | Updated startlive.sh for systemd | [Your Name] |
+| May 2024 | Systemd Service | Created, enabled, and started lineage.service | [Your Name] |
+| May 2024 | Documentation | Created docs/workflowRez.md and docs/workflowMove.md | [Your Name] |
 
 ## Post-Migration Verification
 - [ ] Game server functionality
