@@ -45,11 +45,10 @@
       <include name="FastInfoset-1.2.15.jar" />
       <!-- Correct MySQL Connector -->
       <include name="mysql-connector-j-8.1.0.jar" />
-      <!-- Correct SLF4J/Logback stack -->
+      <!-- SLF4J API, JUL bridge, and JDK14 binding -->
       <include name="slf4j-api-2.0.17.jar" />
-      <include name="logback-classic-1.5.18.jar" />
-      <include name="logback-core-1.5.18.jar" />
       <include name="jul-to-slf4j-2.0.17.jar" />
+      <include name="slf4j-jdk14-2.0.17.jar" />
 
       <!-- Remove old/conflicting jars -->
       <!-- <include name="c3p0-0.9.1.2.jar" /> -->
@@ -57,6 +56,9 @@
       <!-- <include name="slf4j-api-1.7.5.jar" /> -->
       <!-- <include name="slf4j-jdk14-1.7.5.jar" /> -->
       <!-- <include name="slf4j-simple-1.7.5.jar" /> -->
+      <!-- Removed Logback -->
+      <!-- <include name="logback-classic-1.5.18.jar" /> -->
+      <!-- <include name="logback-core-1.5.18.jar" /> -->
     </fileset>
   </path>
 
