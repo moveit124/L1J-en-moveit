@@ -17,18 +17,22 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
 
 ## 2. Getting Code & Making Changes
 
-*   **Always start by getting the latest code:**
+*   **Update Your Local Branch:** Before starting work, always update your local `devMove` branch with the latest changes from the remote repository (`origin`). Use **rebase** to keep the history clean:
     ```bash
     # Navigate to the project directory (if not already there)
-    cd /opt/SanctuaryOfAden
+    # cd /path/to/SanctuaryOfAden # On your LOCAL machine
 
-    # Switch to your development branch
+    # Ensure you are on your development branch
     git checkout devMove
 
-    # Pull the latest changes for your branch from GitHub
-    git pull origin devMove
+    # Pull the latest changes using rebase
+    # This fetches remote changes and replays your local commits on top.
+    git pull --rebase origin devMove
     ```
-    *(If this is your first time, you might need to checkout `main`, pull it, then `git checkout -b devMove`)*
+    *   **(Why rebase?)** Using `git pull --rebase` avoids creating extra "merge commits" just for syncing your branch, keeping the commit history linear and easier to follow.
+    *   **(Alternative)** If you prefer separate steps: `git fetch origin` followed by `git rebase origin/devMove`.
+    *   **(Important!)** **Do NOT** manually merge `origin/devMove` into your local `devMove` (e.g., using merge features in GUI tools without understanding them). This can duplicate commit history.
+    *   *(If this is your first time checking out the branch, you might need to: `git checkout main`, `git pull origin main`, then `git checkout -b devMove origin/devMove`)*
 
 ### 2.1 Local Configuration Setup (One-Time)
 
