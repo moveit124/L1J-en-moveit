@@ -248,7 +248,7 @@
 	</MakeItem>
 	<!-- Lv50 Knight Quest / Entrance to Shrine - Ancient Space-->
 	<Action Name="ent" Class="K" NpcId="91299">
-		<Teleport X="32804" Y="32861" Map="2000" Heading="5" Price="0"/>
+		<Teleport X="32781" Y="32855" Map="2000" Heading="5" Price="0"/>
 		<SetQuest Id="Level50" Step="5"/>
 	</Action>
 	<!-- Lv50 Knight Quest / Rotting Corpse - Sanctuary of Evil -->
@@ -368,7 +368,7 @@
 	</MakeItem>
 	<!-- Lv50 Elf / Entrance to Shrine - Ancient Space -->
 	<Action Name="ent" Class="E" NpcId="91299">
-		<Teleport X="32804" Y="32861" Map="2000" Heading="5" Price="0"/>
+		<Teleport X="32721" Y="23854" Map="2000" Heading="5" Price="0"/>
 		<SetQuest Id="Level50" Step="5"/>
 	</Action>
 	<!-- Lv50 Elf / Dekan - Sanctuary of Evil -->
@@ -503,7 +503,7 @@
 	</Action>
 	<!-- Lv50 Wizard Quest / Entrance to Shrine - Ancient Space-->
 	<Action Name="ent" Class="W" NpcId="91299">
-		<Teleport X="32804" Y="32861" Map="2000" Heading="5" Price="0"/>
+		<Teleport X="32822" Y="32890" Map="2000" Heading="5" Price="0"/>
 		<SetQuest Id="Level50" Step="5"/>
 	</Action>
 	<!-- Lv50 Wizard Quest / Rotting Corpse - Sanctuary of Evil -->
