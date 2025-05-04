@@ -27,13 +27,13 @@ SERVER_CMD="java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -Xlog:gc*:f
 #     exit 1
 # fi
 
-# Rotate logs
-[ -f "log/java0.log" ] && mv "log/java0.log" "log/$(date +%Y-%m-%d_%H-%M-%S)_java.log"
-[ -f "log/stderr.log" ] && mv "log/stderr.log" "log/$(date +%Y-%m-%d_%H-%M-%S)_stderr.log"
+# Rotate logs (REMOVED - journald handles rotation)
+# [ -f "log/java0.log" ] && mv "log/java0.log" "log/$(date +%Y-%m-%d_%H-%M-%S)_java.log"
+# [ -f "log/stderr.log" ] && mv "log/stderr.log" "log/$(date +%Y-%m-%d_%H-%M-%S)_stderr.log"
 
-# Start server directly, piping output to log file
+# Start server directly, piping output to log file (REMOVED tee)
 # screen -dmS "$SCREEN_NAME" bash -c "$SERVER_CMD 2>&1 | tee log/java0.log"
-exec $SERVER_CMD 2>&1 | tee log/java0.log
+exec $SERVER_CMD
 
 # Original messages (commented out as screen is not used)
 # echo "Server started in screen session: $SCREEN_NAME"
