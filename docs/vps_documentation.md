@@ -95,7 +95,11 @@
 ### Starting Server & Viewing Logs
 - From SSH session, run script (as root or moveit124 with sudo rule):
   ```bash
-  start-lineage-log.sh
+  start-lineage.sh
+  ```
+- Alternatively, use the alias (if configured in `.bashrc`):
+  ```bash
+  start lineage
   ```
 
 ### Restarting Server
@@ -141,7 +145,8 @@
 | May 2024 | Permissions | Set group ownership & permissions on /opt/SanctuaryOfAden | [Your Name] |
 | May 2024 | User Setup | Created MySQL user 'moveit124@localhost' | [Your Name] |
 | May 2024 | Permissions | Granted limited sudo for 'moveit124' via visudo | [Your Name] |
-| May 2024 | Operations | Created start-lineage-log.sh script | [Your Name] |
+| May 2024 | Operations | Created start-lineage.sh script | [Your Name] |
+| May 2024 | Operations | Configured 'start lineage' alias for start script | [Your Name] |
 
 ## Post-Migration Verification
 - [x] Game server functionality (Service running, accepting connections)
