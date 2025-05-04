@@ -17,7 +17,6 @@
 ### Starting the Server & Following Logs
 - Use alias (if configured in `.bashrc`): `start`
 - This runs `/usr/local/bin/start-lineage.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
-- *(Note: Requires permissions to run the script, typically root or via sudo)*
 
 ### Viewing Server Console (Live Tail)
 - Use alias (if configured in `.bashrc`): `console`
@@ -26,17 +25,14 @@
 ### Checking Server Status
 - Use alias: `status`
 - Runs `systemctl status lineage.service`
-- *(Note: May require `sudo` for non-root users, depending on polkit/sudo configuration)*
 
 ### Stopping the Server
 - Use alias: `stop`
 - Runs `systemctl stop lineage.service`
-- *(Note: Requires permissions, typically root or via sudo)*
 
 ### Restarting the Server
 - Use alias: `restart`
 - Runs `systemctl restart lineage.service`
-- *(Note: Requires permissions, typically root or via sudo)*
 
 ### Deploying Code Changes
 1. SSH to the server (`soa`).
@@ -51,7 +47,6 @@
 ### Building the Project
 - Use alias (if configured in `.bashrc`): `build`
 - This runs `cd /opt/SanctuaryOfAden && ./build.sh`
-- *(Note: Requires write permissions in the project directory)*
 
 ### Accessing Telnet Console (Localhost only)
 - From SSH session: `telnet localhost 23`
