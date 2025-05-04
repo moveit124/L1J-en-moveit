@@ -18,3 +18,7 @@ emblem/
 
 # Database backups (optional - uncomment if needed)
 # db/*.sql
+
+lib/
+
+config/server.properties
