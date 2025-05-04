@@ -18,8 +18,8 @@
 - From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `start-lineage`
 - This runs `/usr/local/bin/start-lineage.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
 
-### Viewing Server Logs (Live Tail)
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `log-lineage`
+### Viewing Server Console (Live Tail)
+- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `console`
 - This runs `journalctl -f -u lineage.service`
 
 ### Checking Server Status
@@ -33,21 +33,27 @@
 
 ### Deploying Code Changes (as root)
 1. SSH to `soa` as `root`.
-2. `cd /opt/SanctuaryOfAden`
-3. `# Ensure the correct key is used if not the default id_ed25519_github`
+2. Navigate to project dir: `cd /opt/SanctuaryOfAden`
+3. Pull latest code:
+   `# Ensure the correct key is used if not the default id_ed25519_github`
    `GIT_SSH_COMMAND='ssh -i /root/.ssh/[root_github_key_filename] -o StrictHostKeyChecking=no' git pull origin main`
-4. If code changes pulled (check `git log -1`): `./build.sh`
-5. `systemctl restart lineage.service`
-6. `systemctl status lineage.service`
+4. If code changes pulled (check `git log -1`): run `build` alias
+5. Restart service: `systemctl restart lineage.service`
+6. Check status: `systemctl status lineage.service`
 
 ### Deploying Code Changes (as moveit124)
 1. SSH to `soa` as `moveit124`.
-2. `cd /opt/SanctuaryOfAden`
-3. `# Make sure the path to your private key is correct (e.g., /home/moveit124/.ssh/your_key_name)`
+2. Navigate to project dir: `cd /opt/SanctuaryOfAden`
+3. Pull latest code:
+   `# Make sure the path to your private key is correct (e.g., /home/moveit124/.ssh/your_key_name)`
    `GIT_SSH_COMMAND='ssh -i /home/moveit124/.ssh/[your_github_key] -o StrictHostKeyChecking=no' git pull origin main` 
-4. If code changes pulled (check `git log -1`): `./build.sh`
-5. `sudo systemctl restart lineage.service`
-6. `sudo systemctl status lineage.service`
+4. If code changes pulled (check `git log -1`): run `build` alias
+5. Restart service: `sudo systemctl restart lineage.service`
+6. Check status: `sudo systemctl status lineage.service`
+
+### Building the Project
+- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `build`
+- This runs `cd /opt/SanctuaryOfAden && ./build.sh`
 
 ### Accessing Telnet Console (Localhost only)
 - From SSH session: `telnet localhost 23`
