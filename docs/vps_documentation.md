@@ -15,56 +15,51 @@
 ## Common Operations
 
 ### Starting the Server & Following Logs
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `start`
+- Use alias (if configured in `.bashrc`): `start`
 - This runs `/usr/local/bin/start-lineage.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
+- *(Note: Requires permissions to run the script, typically root or via sudo)*
 
 ### Viewing Server Console (Live Tail)
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `console`
+- Use alias (if configured in `.bashrc`): `console`
 - This runs `journalctl -f -u lineage.service`
 
 ### Checking Server Status
 - Use alias: `status`
-- Runs `systemctl status lineage.service` (or `sudo ...` for `moveit124`)
+- Runs `systemctl status lineage.service`
+- *(Note: May require `sudo` for non-root users, depending on polkit/sudo configuration)*
 
 ### Stopping the Server
 - Use alias: `stop`
-- Runs `systemctl stop lineage.service` (or `sudo ...` for `moveit124`)
+- Runs `systemctl stop lineage.service`
+- *(Note: Requires permissions, typically root or via sudo)*
 
 ### Restarting the Server
 - Use alias: `restart`
-- Runs `systemctl restart lineage.service` (or `sudo ...` for `moveit124`)
+- Runs `systemctl restart lineage.service`
+- *(Note: Requires permissions, typically root or via sudo)*
 
-### Deploying Code Changes (as root)
-1. SSH to `soa` as `root`.
+### Deploying Code Changes
+1. SSH to the server (`soa`).
 2. Navigate to project dir: `cd /opt/SanctuaryOfAden`
-3. Pull latest code:
-   `# Ensure the correct key is used if not the default id_ed25519_github`
-   `GIT_SSH_COMMAND='ssh -i /root/.ssh/[root_github_key_filename] -o StrictHostKeyChecking=no' git pull origin main`
-4. If code changes pulled (check `git log -1`): run `build` alias
-5. Restart service: run `restart` alias
-6. Check status: run `status` alias
-
-### Deploying Code Changes (as moveit124)
-1. SSH to `soa` as `moveit124`.
-2. Navigate to project dir: `cd /opt/SanctuaryOfAden`
-3. Pull latest code:
-   `# Make sure the path to your private key is correct (e.g., /home/moveit124/.ssh/your_key_name)`
-   `GIT_SSH_COMMAND='ssh -i /home/moveit124/.ssh/[your_github_key] -o StrictHostKeyChecking=no' git pull origin main` 
+3. Pull latest code from the `main` branch:
+   `# Ensure the correct SSH key for GitHub is specified (e.g., ~/.ssh/github_key)`
+   `GIT_SSH_COMMAND='ssh -i [path_to_github_ssh_key] -o StrictHostKeyChecking=no' git pull origin main`
 4. If code changes pulled (check `git log -1`): run `build` alias
 5. Restart service: run `restart` alias
 6. Check status: run `status` alias
 
 ### Building the Project
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `build`
+- Use alias (if configured in `.bashrc`): `build`
 - This runs `cd /opt/SanctuaryOfAden && ./build.sh`
+- *(Note: Requires write permissions in the project directory)*
 
 ### Accessing Telnet Console (Localhost only)
 - From SSH session: `telnet localhost 23`
 - Available commands: `echo`, `playerid`, `charstatus`, `globalchat`, `shutdown` (and others defined in `TelnetCommandList.java`)
 
 ### Accessing MySQL
-- As root: `mysql -u root -p`
-- As moveit124: `mysql -u moveit124 -p soadb`
+- **Root Access:** `mysql -u root -p` (Requires root password)
+- **App User Access:** `mysql -u [app_username] -p [database_name]` (e.g., `mysql -u moveit124 -p soadb`)
 - Remote access (e.g., Workbench) requires SSH Tunneling to connect to `127.0.0.1:3306` on the server.
 
 ### Manual Backup
