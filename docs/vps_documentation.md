@@ -69,8 +69,3 @@
 
 ### Manual Backup
 - As root: `mysqldump -u root -p soadb > /opt/SanctuaryOfAden/db/soadb_backup_$(date +%Y%m%d_%H%M%S).sql`
-
-## Server Details
-# ... existing code ...
-
-# (Removed sensitive credential block that was here)
