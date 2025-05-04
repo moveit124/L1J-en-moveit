@@ -20,6 +20,7 @@ emblem/
 # db/*.sql
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # User-specific workflow/guide files
 docs/workflowRez.md
 =======
@@ -29,3 +30,8 @@ config/server.properties
 >>>>>>> c448f4a (ignore stuff)
 
 config/
+=======
+lib/
+
+config/server.properties
+>>>>>>> origin/IvoryTowerUpdate
