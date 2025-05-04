@@ -15,7 +15,7 @@
 ## Common Operations
 
 ### Starting the Server & Following Logs
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `start-lineage`
+- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `start`
 - This runs `/usr/local/bin/start-lineage.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
 
 ### Viewing Server Console (Live Tail)
