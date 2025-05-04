@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import io.netty.util.internal.ThreadLocalRandom;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.GeneralThreadPool;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillTable;
@@ -37,6 +36,7 @@ import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1PcInventory;
+import l1j.server.server.model.L1PinkName;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1Teleport;
 import l1j.server.server.model.L1War;
@@ -65,6 +65,8 @@ import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.poison.L1DamagePoison;
 import l1j.server.server.model.trap.L1WorldTraps;
+import l1j.server.server.random.RandomGenerator;
+import l1j.server.server.random.RandomGeneratorFactory;
 import l1j.server.server.serverpackets.S_ChangeHeading;
 import l1j.server.server.serverpackets.S_ChangeName;
 import l1j.server.server.serverpackets.S_ChangeShape;
@@ -138,6 +140,7 @@ public class L1SkillUse {
 	private boolean _isGlanceCheckFail = false;
 	private boolean _skipCastingAnimation = false; // New field to control whether casting animation is shown
 
+	private static RandomGenerator _random = RandomGeneratorFactory.newRandom();
 	private L1Character _user = null;
 	private L1Character _target = null;
 
@@ -547,7 +550,6 @@ public class L1SkillUse {
 
 			if (!isCheckedUseSkill()) {
 				boolean isUseSkill = checkUseSkill(player, skillId, targetId, x, y, message, timeSecs, type, attacker);
-
 				if (!isUseSkill) {
 					failSkill();
 					return;
@@ -583,11 +585,8 @@ public class L1SkillUse {
 				setDelay();
 				break;
 			case TYPE_LOGIN:
-				if (_skillId == DECREASE_WEIGHT) {// Fix for DW graphic sent at
-													// login
-					sendGrfx(false);
-				}
 				runSkill();
+				
 				break;
 			case TYPE_GMBUFF:
 				runSkill();
@@ -850,6 +849,10 @@ public class L1SkillUse {
 						&& (_player.getParty().isMember((L1PcInstance) cha) || _player.isGm())) {
 					return true;
 				}
+			}
+			if (_skillId == NATURES_BLESSING 
+					&& cha instanceof L1SummonInstance || cha instanceof L1PetInstance) {
+				return true;
 			}
 		} catch (Exception ex) {
 			_log.info("Failed while checking target. Defaulting to false. Exception below");
@@ -1592,40 +1595,8 @@ public class L1SkillUse {
 				_targetY + yPlus, _user.getMapId(), (L1PcInstance) _user, _skillId);
 	}
 
-	private void runSkill() {
-		if (_user instanceof L1PcInstance) {
-		    L1PcInstance caster = (L1PcInstance) _user;
-
-		    // Mark recent AOE cast based on skill ID
-		    switch (_skillId) {
-		        case FREEZING_BLIZZARD:
-		        case FIRE_STORM:
-		        case EARTHQUAKE:
-		        case FROZEN_CLOUD:
-		        case LIGHTNING_STORM:
-		        case METEOR_STRIKE:
-		        case BLIZZARD:
-		        case FIREBALL:
-		        case COUNTER_BARRIER:
-		        case SHOCK_SKIN:
-		        case TORNADO:
-		        case EARTH_JAIL:
-		            caster.setRecentlyUsedAoeSkill(true);
-
-		            GeneralThreadPool.getInstance().execute(new Runnable() {
-		                @Override
-		                public void run() {
-		                    try {
-		                        Thread.sleep(2000); // 2 seconds
-		                    } catch (InterruptedException e) {
-		                        e.printStackTrace();
-		                    }
-		                    caster.setRecentlyUsedAoeSkill(false);
-		                }
-		            });
-		            break;
-		    }
-		}
+private void runSkill() {
+		
 		L1Skill l1skills = SkillTable.getInstance().findBySkillId(_skillId);
 		if (_skillId == LIFE_STREAM) {
 			L1EffectSpawn.getInstance().spawnEffect(81169, _skill.getBuffDuration() * 1000, _targetX, _targetY,
