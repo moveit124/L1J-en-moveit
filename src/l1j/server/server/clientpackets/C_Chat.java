@@ -40,6 +40,7 @@ import l1j.server.server.network.Client;
 import l1j.server.server.serverpackets.S_ChatPacket;
 import l1j.server.server.serverpackets.S_NpcChatPacket;
 import l1j.server.server.serverpackets.S_PacketBox;
+import l1j.server.server.serverpackets.S_RawStringDialog;
 import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SystemMessage;
 
@@ -92,6 +93,9 @@ public class C_Chat extends ClientBasePacket {
 		            pc.setBotCheckStartTime(0);
 		        } else {
 		            pc.sendPackets(new S_SystemMessage("Incorrect answer. Please try again."));
+			        // 🛡️ If window was closed but they type something, resend question
+			    	pc.sendPackets(new S_RawStringDialog(pc.getId(), "Bot Check", pc.getBotCheckQuestionText()));
+			    	pc.sendPackets(new S_SystemMessage("Please answer the bot check question."));
 		        }
 		    }
 		    return; // Do not process their chat normally if they are mid-bot-check
