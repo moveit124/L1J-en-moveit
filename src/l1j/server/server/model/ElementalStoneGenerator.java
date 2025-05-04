@@ -69,10 +69,26 @@ public class ElementalStoneGenerator implements Runnable {
 	 * Set up to decide on the next point.
 	 */
 	private Point nextPoint() {
-		int newX = ThreadLocalRandom.current().nextInt(getLastX() - getFirstX()) + getFirstX();
-		int newY = ThreadLocalRandom.current().nextInt(getLastY() - getFirstY()) + getFirstY();
+	    L1Map map = L1WorldMap.getInstance().getMap((short) ELVEN_FOREST_MAPID);
+	    Point candidate = null;
 
-		return new Point(newX, newY);
+	    for (int i = 0; i < 50; i++) {
+	        int newX = ThreadLocalRandom.current().nextInt(getLastX() - getFirstX() + 1) + getFirstX();
+	        int newY = ThreadLocalRandom.current().nextInt(getLastY() - getFirstY() + 1) + getFirstY();
+	        Point point = new Point(newX, newY);
+
+	        if (map.isInMap(point) && map.isPassable(point)) {
+	            candidate = point;
+	            break;
+	        }
+	    }
+
+	    // fallback if no valid point found
+	    if (candidate == null) {
+	        candidate = new Point(getFirstX(), getFirstY());
+	    }
+
+	    return candidate;
 	}
 
 	/**
