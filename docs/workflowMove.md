@@ -67,23 +67,22 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
     ```
 *   Pull the latest `main` branch changes from GitHub (using your specific deploy key):
     ```bash
-    # Make sure the path to your private key is correct (e.g., /home/moveit124/.ssh/your_key_name)
-    GIT_SSH_COMMAND='ssh -i [Path to Your GitHub SSH Key on Server] -o StrictHostKeyChecking=no' git pull origin main
+    # Ensure the correct SSH key for GitHub is specified (e.g., ~/.ssh/github_key)
+    GIT_SSH_COMMAND='ssh -i [path_to_github_ssh_key] -o StrictHostKeyChecking=no' git pull origin main
     ```
 *   **Check if code was updated:** Look at the `git pull` output or run `git log -1` to see if `.java` files were changed.
-*   **If CODE changed:** Stop, rebuild, and start the service:
+*   **If CODE changed:** Run `build` alias, then `restart` alias.
     ```bash
-    sudo systemctl stop lineage.service
-    ./build.sh
-    sudo systemctl start lineage.service
+    build
+    restart
     ```
-*   **If ONLY Config/Docs/Other non-code files changed:** Just restart the service:
+*   **If ONLY Config/Docs/Other non-code files changed:** Just run `restart` alias:
     ```bash
-    sudo systemctl restart lineage.service
+    restart
     ```
 *   Verify the server status:
     ```bash
-    sudo systemctl status lineage.service
+    status
     ```
     *(Look for "active (running)")*
 
@@ -92,12 +91,19 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
 *   Connect via SSH: `ssh moveit124@soa`
 *   Use the alias (requires a new shell session after initial setup):
     ```bash
-    log-lineage
+    console
     ```
 *   (Alternatively, run the full command: `journalctl -f -u lineage.service`)
 *   Press `Ctrl+C` to stop viewing logs.
 
-## 7. Key Reminders
+## 7. Other Server Commands (Aliases)
+
+*   `start`: Starts the server and follows logs (like `start_interactive.sh`).
+*   `stop`: Stops the server.
+*   `status`: Checks the server status.
+*   `build`: Runs the build script (`./build.sh`).
+
+## 8. Key Reminders
 
 *   Always run `git pull origin devMove` on your `devMove` branch before starting new work.
 *   Communicate frequently with Rez, especially before merging changes to `main`.
