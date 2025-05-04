@@ -12,6 +12,41 @@
 - **Server Type**: Dedicated Server L-16
 - **Date Configured**: May 2024
 
+## Common Operations
+
+### Viewing Live Server Logs
+- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `log-lineage`
+- Direct command: `journalctl -f -u lineage.service -e`
+- Alias definition: `alias log-lineage='journalctl -f -u lineage.service -e'`
+
+### Starting Server & Viewing Logs
+- From SSH session, run script (as root or moveit124 with sudo rule):
+  ```bash
+  start-lineage.sh
+  ```
+- Alternatively, use the alias (if configured in `.bashrc`):
+  ```bash
+  start lineage
+  ```
+
+### Restarting Server
+- From SSH session (root or moveit124 with sudo rule):
+  ```bash
+  sudo systemctl restart lineage.service
+  ```
+
+### Stopping Server
+- From SSH session (root or moveit124 with sudo rule):
+  ```bash
+  sudo systemctl stop lineage.service
+  ```
+
+### Checking Server Status
+- From SSH session (root or moveit124 with sudo rule):
+  ```bash
+  sudo systemctl status lineage.service
+  ```
+
 ## Initial Setup
 
 ### SSH Configuration
@@ -84,35 +119,6 @@
 ### Group: `gamedevs`
 - **Purpose:** Grant shared write/execute access to the game server directory (`/opt/SanctuaryOfAden`).
 - **Members:** `moveit124`.
-
-## Common Operations
-
-### Viewing Live Server Logs
-- From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `log-lineage`
-- Direct command: `journalctl -f -u lineage.service -e`
-- Alias definition: `alias log-lineage='journalctl -f -u lineage.service -e'`
-
-### Starting Server & Viewing Logs
-- From SSH session, run script (as root or moveit124 with sudo rule):
-  ```bash
-  start-lineage.sh
-  ```
-- Alternatively, use the alias (if configured in `.bashrc`):
-  ```bash
-  start lineage
-  ```
-
-### Restarting Server
-- From SSH session (root or moveit124 with sudo rule):
-  ```bash
-  sudo systemctl restart lineage.service
-  ```
-
-### Stopping Server
-- From SSH session (root or moveit124 with sudo rule):
-  ```bash
-  sudo systemctl stop lineage.service
-  ```
 
 ## Maintenance Log
 
