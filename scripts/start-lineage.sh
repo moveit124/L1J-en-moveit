@@ -8,9 +8,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Waiting 3 seconds..."
-sleep 3
+# No explicit wait needed
 
-echo "Following logs (Ctrl+C to stop):"
-# Jump to end and follow live output
-journalctl -f -u lineage.service -e 
+echo "Following logs from start (Ctrl+C to stop):"
+# Show logs since the start command was issued and follow
+journalctl -f -u lineage.service --since "0 seconds ago" 
