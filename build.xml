@@ -38,8 +38,11 @@
       <!-- JAXB for Java 11+ -->
       <include name="javax.activation-api-1.2.0.jar" />
       <include name="jaxb-api-2.3.1.jar" />
-      <include name="jaxb-core-2.3.0.1.jar" />
-      <include name="jaxb-impl-2.3.1.jar" />
+      <include name="jaxb-runtime-2.3.1.jar" />
+      <include name="istack-commons-runtime-3.0.7.jar" />
+      <include name="stax-ex-1.8.jar" />
+      <include name="txw2-2.3.1.jar" />
+      <include name="FastInfoset-1.2.15.jar" />
       <!-- Correct MySQL Connector -->
       <include name="mysql-connector-j-8.1.0.jar" />
       <!-- Correct SLF4J/Logback stack -->
