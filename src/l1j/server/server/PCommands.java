@@ -95,7 +95,7 @@ public class PCommands {
 	private static int[] BuffSkillsDuration = { 3600, 1800, 1200, 1200,
 			1800, 960, 1200, 1200, 
 			1200, 2400, 960, 1200, 960};
-
+	//Test
 	// Starting experiment to see whether caching common messages has an
 	// effect.
 	private static final S_SystemMessage DropHelp = new S_SystemMessage(
