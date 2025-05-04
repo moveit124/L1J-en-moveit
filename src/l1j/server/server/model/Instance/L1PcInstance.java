@@ -4348,5 +4348,14 @@ public class L1PcInstance extends L1Character {
 
 	public int getLastBoardPage() {
 		return lastBoardPage;
+	}	
+	private String botCheckQuestionText;
+
+	public void setBotCheckQuestionText(String text) {
+	    this.botCheckQuestionText = text;
+	}
+
+	public String getBotCheckQuestionText() {
+	    return this.botCheckQuestionText;
 	}
 }
