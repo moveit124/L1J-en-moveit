@@ -250,9 +250,12 @@ public class L1PcInstance extends L1Character {
 
 
 	public int generateRandomKillThreshold(int currentKills) {
-	    int min = Math.max(currentKills, 250);
+	    // Ensure min does not exceed max (1000) to prevent negative bound for nextInt
+	    int min = Math.min(Math.max(currentKills, 250), 1000);
 	    int max = 1000;
-	    return min + ThreadLocalRandom.current().nextInt(max - min + 1);
+	    // Calculate bound, ensuring it's at least 1
+	    int bound = Math.max(1, max - min + 1);
+	    return min + ThreadLocalRandom.current().nextInt(bound);
 	}
 
 	//Haunted House Bot Detection
