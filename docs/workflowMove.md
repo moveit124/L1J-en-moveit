@@ -70,7 +70,7 @@ This document outlines the standard workflow for making changes to the Sanctuary
         ```
 
 8.  **Deploy to Live Server (`soa`):**
-    *   **IMPORTANT:** Replace `[Your SSH Command/Alias for soa]` and `[Path to Your GitHub SSH Key on Server]` below with your specific details.
+    *   **IMPORTANT:** Replace `[Your SSH Command/Alias for soa]` and `[Path to Your GitHub SSH Key on Server]` below with your specific details. The key path is typically something like `/home/your_username/.ssh/id_ed25519_github`.
     *   SSH into the live server:
         ```bash
         [Your SSH Command/Alias for soa]
@@ -79,16 +79,17 @@ This document outlines the standard workflow for making changes to the Sanctuary
     *   Ensure you are on the `main` branch: `git checkout main`
     *   Pull the latest changes from the `main` branch on GitHub:
         ```bash
+        # Replace [Path to Your GitHub SSH Key on Server] with the actual path to your private key
         GIT_SSH_COMMAND='ssh -i [Path to Your GitHub SSH Key on Server] -o StrictHostKeyChecking=no' git pull origin main
         ```
     *   **If code changes were pulled:**
-        *   Stop the running service: `systemctl stop lineage.service`
+        *   Stop the running service: `sudo systemctl stop lineage.service` # Use sudo
         *   Rebuild the application: `./build.sh`
-        *   Restart the service: `systemctl start lineage.service`
-        *   Check the status: `systemctl status lineage.service`
+        *   Restart the service: `sudo systemctl start lineage.service` # Use sudo
+        *   Check the status: `sudo systemctl status lineage.service` # Use sudo
     *   **If only configuration or non-code files were pulled:**
-        *   Restart the service to apply changes: `systemctl restart lineage.service`
-        *   Check the status: `systemctl status lineage.service`
+        *   Restart the service to apply changes: `sudo systemctl restart lineage.service` # Use sudo
+        *   Check the status: `sudo systemctl status lineage.service` # Use sudo
 
 ## Notes
 
