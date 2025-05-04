@@ -70,7 +70,7 @@ public class C_MoveChar extends ClientBasePacket {
 			_log.warn("Check of zone type and resetting aggressive act failed.", ex);
 		}
 		
-		if (pc.isTeleport()) {
+		if (pc.isTeleport() || pc.isParalyzed()) {
 			return;
 		}
 
