@@ -12,9 +12,12 @@ import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.serverpackets.S_DropItem;
 import l1j.server.server.serverpackets.S_RemoveObject;
 import l1j.server.server.templates.L1Npc;
+import l1j.server.server.types.Point;
 
 public class L1GroundInventory extends L1Inventory {
     private static final long serialVersionUID = 1L;
@@ -89,22 +92,8 @@ public class L1GroundInventory extends L1Inventory {
         String slimeKey = mapId + ":" + gridKey;
         if (activeSlimeKeys.contains(slimeKey)) return;
 
-        int[] mobOptions = {45023, 70984, 45025, 45060 }; // Boar, Cow, Gremlin, Slime
+        int[] mobOptions = {45023, 70984, 45025, 45060}; // Boar, Cow, Gremlin, Slime
         int slimeId = mobOptions[random.nextInt(mobOptions.length)];
-        int distance = 6 + random.nextInt(3);
-        int dx = 0, dy = 0;
-        int direction = random.nextInt(8);
-
-        switch (direction) {
-            case 0: dx = distance; dy = 0; break;
-            case 1: dx = distance; dy = distance; break;
-            case 2: dx = 0; dy = distance; break;
-            case 3: dx = -distance; dy = distance; break;
-            case 4: dx = -distance; dy = 0; break;
-            case 5: dx = -distance; dy = -distance; break;
-            case 6: dx = 0; dy = -distance; break;
-            case 7: dx = distance; dy = -distance; break;
-        }
 
         L1Npc slimeNpc = NpcTable.getInstance().getTemplate(slimeId);
         if (slimeNpc == null) return;
@@ -117,9 +106,29 @@ public class L1GroundInventory extends L1Inventory {
             }
         };
 
+        L1Map map = L1WorldMap.getInstance().getMap((short) mapId);
+        Point candidate = null;
+
+        // Try up to 50 times to find a passable nearby location
+        for (int i = 0; i < 50; i++) {
+            int nx = x + random.nextInt(11) - 5; // -5 to +5
+            int ny = y + random.nextInt(11) - 5;
+            Point point = new Point(nx, ny);
+
+            if (map.isInMap(point) && map.isPassable(point)) {
+                candidate = point;
+                break;
+            }
+        }
+
+        // Fallback if no valid location found
+        if (candidate == null) {
+            candidate = new Point(x, y);
+        }
+
         slime.setId(IdFactory.getInstance().nextId());
-        slime.setX(x + dx);
-        slime.setY(y + dy);
+        slime.setX(candidate.getX());
+        slime.setY(candidate.getY());
         slime.setMap((short) mapId);
         slime.setHeading(random.nextInt(8));
 
