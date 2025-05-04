@@ -29,7 +29,20 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
     git pull origin devMove
     ```
     *(If this is your first time, you might need to checkout `main`, pull it, then `git checkout -b devMove`)*
-*   Make your code, configuration, or documentation edits on your **local machine**.
+
+### 2.1 Local Configuration Setup (One-Time)
+
+*   The server uses template configuration files (`.template`) tracked by Git.
+*   The actual configuration files (e.g., `config/server.properties`) are ignored by Git (`.gitignore`) to allow local overrides.
+*   **First time setup:** Copy the template to create your local configuration file:
+    ```bash
+    cp config/server.properties.template config/server.properties
+    ```
+*   **Modify Local Config:** Edit the *local* `config/server.properties` (NOT the template) with your specific database credentials or other settings needed for your local development environment.
+
+*   Make your code edits on your **local machine**.
+*   If you need to change a configuration setting *for everyone* (including the live server), edit the `.template` file (e.g., `config/server.properties.template`). Ask Rez to review before merging.
+*   If you only need to change a setting for your *local* testing, edit the actual config file (e.g., `config/server.properties`), which is ignored by Git.
 *   **Test Locally:** If you changed code (`.java` files), run `./build.sh` locally to check for compilation errors before committing.
 
 ## 3. Saving Your Changes (Locally)
@@ -68,15 +81,21 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
 *   Pull the latest `main` branch changes from GitHub (using your specific deploy key):
     ```bash
     # Ensure the correct SSH key for GitHub is specified (e.g., ~/.ssh/github_key)
-    GIT_SSH_COMMAND='ssh -i [path_to_github_ssh_key] -o StrictHostKeyChecking=no' git pull origin main
+    GIT_SSH_COMMAND='ssh -i /home/moveit124/.ssh/id_ed25519 -o StrictHostKeyChecking=no' git pull origin main
     ```
-*   **Check if code was updated:** Look at the `git pull` output or run `git log -1` to see if `.java` files were changed.
-*   **If CODE changed:** Run `build` alias, then `restart` alias.
+*   **Check which files changed:** `git log -1 --name-status` or check pull output.
+*   **If `.template` config files changed:** Copy the updated template(s) to the live configuration file(s):
+    ```bash
+    # Example for server.properties:
+    cp config/server.properties.template config/server.properties
+    # Add commands for other templates if needed
+    ```
+*   **If code changed (e.g., `.java` files):** Run `build` alias, then `restart` alias.
     ```bash
     build
     restart
     ```
-*   **If ONLY Config/Docs/Other non-code files changed:** Just run `restart` alias:
+*   **If *only* config templates or non-code files (docs, etc.) changed:** Just run `restart` alias after copying templates:
     ```bash
     restart
     ```
