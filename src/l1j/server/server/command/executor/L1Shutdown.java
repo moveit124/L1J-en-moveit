@@ -33,19 +33,40 @@ public class L1Shutdown implements L1CommandExecutor {
 
 	@Override
 	public void execute(L1PcInstance pc, String cmdName, String arg) {
-		try {
-			if (arg.equalsIgnoreCase("now")) {
-				GameServer.getInstance().shutdown();
-				return;
-			}
-			if (arg.equalsIgnoreCase("abort")) {
-				GameServer.getInstance().abortShutdown();
-				return;
-			}
-			int sec = Math.max(5, Integer.parseInt(arg));
-			GameServer.getInstance().shutdownWithCountdown(sec);
-		} catch (Exception e) {
-			pc.sendPackets(new S_SystemMessage(".shutdown sec|abort"));
-		}
+	    try {
+	        if (arg.equalsIgnoreCase("now")) {
+	            GameServer.getInstance().shutdown();
+	            return;
+	        }
+	        if (arg.equalsIgnoreCase("abort")) {
+	            GameServer.getInstance().abortShutdown();
+	            return;
+	        }
+
+	        String[] parts = arg.split("\\s+");
+	        int totalSec = 0;
+
+	        for (String part : parts) {
+	            part = part.toLowerCase();
+	            if (part.endsWith("d")) {
+	                totalSec += Integer.parseInt(part.replace("d", "")) * 86400;
+	            } else if (part.endsWith("h")) {
+	                totalSec += Integer.parseInt(part.replace("h", "")) * 3600;
+	            } else if (part.endsWith("m")) {
+	                totalSec += Integer.parseInt(part.replace("m", "")) * 60;
+	            } else if (part.endsWith("s")) {
+	                totalSec += Integer.parseInt(part.replace("s", ""));
+	            } else {
+	                totalSec += Integer.parseInt(part); // fallback if no suffix
+	            }
+	        }
+
+	        totalSec = Math.max(5, totalSec);
+	        GameServer.getInstance().shutdownWithCountdown(totalSec);
+	    } catch (Exception e) {
+	        pc.sendPackets(new S_SystemMessage(".shutdown [now|abort|Xd Xh Xm Xs]"));
+	        //Test
+	    }
 	}
+
 }
