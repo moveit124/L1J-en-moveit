@@ -16,7 +16,7 @@
 
 ### Starting the Server & Following Logs
 - Use alias (if configured in `.bashrc`): `start`
-- This runs `/usr/local/bin/start-lineage.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
+- This runs `/usr/local/bin/start_interactive.sh` which executes `sudo systemctl start lineage.service && journalctl -f -u lineage.service --since "0 seconds ago"`
 
 ### Viewing Server Console (Live Tail)
 - Use alias (if configured in `.bashrc`): `console`
