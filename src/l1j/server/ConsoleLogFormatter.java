@@ -55,8 +55,11 @@ public class ConsoleLogFormatter extends Formatter {
 			output.append(record.getMessage());
 			output.append("\r\n");
 		} else {
-			output.append(dateFmt.format(new Date(record.getMillis())));
-			output.append(" [TID:");
+			// Comment out the timestamp line
+			// output.append(dateFmt.format(new Date(record.getMillis())));
+			// Add a space if the timestamp was removed
+			output.append(" "); 
+			output.append("[TID:");
 			output.append(threadId);
 			output.append("] ");
 			output.append(className);
@@ -73,8 +76,11 @@ public class ConsoleLogFormatter extends Formatter {
 					PrintWriter pw = new PrintWriter(sw);
 					record.getThrown().printStackTrace(pw);
 					pw.close();
-					output.append(dateFmt.format(new Date(record.getMillis())));
-					output.append(" [TID:");
+					// Comment out the timestamp line for stack traces
+					// output.append(dateFmt.format(new Date(record.getMillis())));
+					// Add a space if the timestamp was removed
+					output.append(" ");
+					output.append("[TID:");
 					output.append(threadId);
 					output.append("] ");
 					output.append(sw.toString());

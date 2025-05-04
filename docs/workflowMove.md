@@ -17,19 +17,36 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
 
 ## 2. Getting Code & Making Changes
 
-*   **Always start by getting the latest code:**
+*   **Update Your Local Branch:** Before starting work, always update your local `devMove` branch with the latest changes from the remote repository (`origin`). Use **rebase** to keep the history clean:
     ```bash
     # Navigate to the project directory (if not already there)
-    cd /opt/SanctuaryOfAden
+    # cd /path/to/SanctuaryOfAden # On your LOCAL machine
 
-    # Switch to your development branch
+    # Ensure you are on your development branch
     git checkout devMove
 
-    # Pull the latest changes for your branch from GitHub
-    git pull origin devMove
+    # Pull the latest changes using rebase
+    # This fetches remote changes and replays your local commits on top.
+    git pull --rebase origin devMove
     ```
-    *(If this is your first time, you might need to checkout `main`, pull it, then `git checkout -b devMove`)*
-*   Make your code, configuration, or documentation edits on your **local machine**.
+    *   **(Why rebase?)** Using `git pull --rebase` avoids creating extra "merge commits" just for syncing your branch, keeping the commit history linear and easier to follow.
+    *   **(Alternative)** If you prefer separate steps: `git fetch origin` followed by `git rebase origin/devMove`.
+    *   **(Important!)** **Do NOT** manually merge `origin/devMove` into your local `devMove` (e.g., using merge features in GUI tools without understanding them). This can duplicate commit history.
+    *   *(If this is your first time checking out the branch, you might need to: `git checkout main`, `git pull origin main`, then `git checkout -b devMove origin/devMove`)*
+
+### 2.1 Local Configuration Setup (One-Time)
+
+*   The server uses template configuration files (`.template`) tracked by Git.
+*   The actual configuration files (e.g., `config/server.properties`) are ignored by Git (`.gitignore`) to allow local overrides.
+*   **First time setup:** Copy the template to create your local configuration file:
+    ```bash
+    cp config/server.properties.template config/server.properties
+    ```
+*   **Modify Local Config:** Edit the *local* `config/server.properties` (NOT the template) with your specific database credentials or other settings needed for your local development environment.
+
+*   Make your code edits on your **local machine**.
+*   If you need to change a configuration setting *for everyone* (including the live server), edit the `.template` file (e.g., `config/server.properties.template`). Ask Rez to review before merging.
+*   If you only need to change a setting for your *local* testing, edit the actual config file (e.g., `config/server.properties`), which is ignored by Git.
 *   **Test Locally:** If you changed code (`.java` files), run `./build.sh` locally to check for compilation errors before committing.
 
 ## 3. Saving Your Changes (Locally)
@@ -68,15 +85,21 @@ This document outlines the standard workflow for 'moveit124' to make changes to 
 *   Pull the latest `main` branch changes from GitHub (using your specific deploy key):
     ```bash
     # Ensure the correct SSH key for GitHub is specified (e.g., ~/.ssh/github_key)
-    GIT_SSH_COMMAND='ssh -i [path_to_github_ssh_key] -o StrictHostKeyChecking=no' git pull origin main
+    GIT_SSH_COMMAND='ssh -i /home/moveit124/.ssh/id_ed25519 -o StrictHostKeyChecking=no' git pull origin main
     ```
-*   **Check if code was updated:** Look at the `git pull` output or run `git log -1` to see if `.java` files were changed.
-*   **If CODE changed:** Run `build` alias, then `restart` alias.
+*   **Check which files changed:** `git log -1 --name-status` or check pull output.
+*   **If `.template` config files changed:** Copy the updated template(s) to the live configuration file(s):
+    ```bash
+    # Example for server.properties:
+    cp config/server.properties.template config/server.properties
+    # Add commands for other templates if needed
+    ```
+*   **If code changed (e.g., `.java` files):** Run `build` alias, then `restart` alias.
     ```bash
     build
     restart
     ```
-*   **If ONLY Config/Docs/Other non-code files changed:** Just run `restart` alias:
+*   **If *only* config templates or non-code files (docs, etc.) changed:** Just run `restart` alias after copying templates:
     ```bash
     restart
     ```
