@@ -23,13 +23,16 @@
 - This runs `journalctl -f -u lineage.service`
 
 ### Checking Server Status
-- `systemctl status lineage.service` (or `sudo systemctl status lineage.service` for `moveit124`)
+- Use alias: `status`
+- Runs `systemctl status lineage.service` (or `sudo ...` for `moveit124`)
 
 ### Stopping the Server
-- `systemctl stop lineage.service` (or `sudo systemctl stop lineage.service` for `moveit124`)
+- Use alias: `stop`
+- Runs `systemctl stop lineage.service` (or `sudo ...` for `moveit124`)
 
 ### Restarting the Server
-- `systemctl restart lineage.service` (or `sudo systemctl restart lineage.service` for `moveit124`)
+- Use alias: `restart`
+- Runs `systemctl restart lineage.service` (or `sudo ...` for `moveit124`)
 
 ### Deploying Code Changes (as root)
 1. SSH to `soa` as `root`.
@@ -38,8 +41,8 @@
    `# Ensure the correct key is used if not the default id_ed25519_github`
    `GIT_SSH_COMMAND='ssh -i /root/.ssh/[root_github_key_filename] -o StrictHostKeyChecking=no' git pull origin main`
 4. If code changes pulled (check `git log -1`): run `build` alias
-5. Restart service: `systemctl restart lineage.service`
-6. Check status: `systemctl status lineage.service`
+5. Restart service: run `restart` alias
+6. Check status: run `status` alias
 
 ### Deploying Code Changes (as moveit124)
 1. SSH to `soa` as `moveit124`.
@@ -48,8 +51,8 @@
    `# Make sure the path to your private key is correct (e.g., /home/moveit124/.ssh/your_key_name)`
    `GIT_SSH_COMMAND='ssh -i /home/moveit124/.ssh/[your_github_key] -o StrictHostKeyChecking=no' git pull origin main` 
 4. If code changes pulled (check `git log -1`): run `build` alias
-5. Restart service: `sudo systemctl restart lineage.service`
-6. Check status: `sudo systemctl status lineage.service`
+5. Restart service: run `restart` alias
+6. Check status: run `status` alias
 
 ### Building the Project
 - From SSH session (root or moveit124), use alias (if configured in `.bashrc`): `build`
