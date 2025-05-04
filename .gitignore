@@ -20,6 +20,7 @@ emblem/
 # db/*.sql
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # User-specific workflow/guide files
 docs/workflowRez.md
 =======
@@ -33,3 +34,8 @@ config/
 .project
 
 .classpath
+=======
+lib/
+
+config/server.properties
+>>>>>>> origin/devMove
