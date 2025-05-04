@@ -35,3 +35,5 @@ lib/
 
 config/server.properties
 >>>>>>> origin/IvoryTowerUpdate
+
+*.properties
