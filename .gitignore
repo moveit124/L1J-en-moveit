@@ -19,5 +19,13 @@ emblem/
 # Database backups (optional - uncomment if needed)
 # db/*.sql
 
+<<<<<<< HEAD
 # User-specific workflow/guide files
 docs/workflowRez.md
+=======
+lib/
+
+config/server.properties
+>>>>>>> c448f4a (ignore stuff)
+
+config/
