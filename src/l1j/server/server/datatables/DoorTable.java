@@ -55,15 +55,42 @@ public class DoorTable {
 		load();
 	}
 
+	/**
+	 * Check if a door ID is in a range of known duplicate doors
+	 * @param id Door ID to check
+	 * @return true if the door is in a known duplicate range
+	 */
+	private boolean isInKnownDuplicateRange(int id) {
+		return (id >= 0 && id <= 4) || 
+			   (id >= 100 && id <= 107) || 
+			   (id >= 200 && id <= 205) || 
+			   (id >= 300 && id <= 310) || 
+			   (id >= 400 && id <= 407) || 
+			   (id >= 500 && id <= 511) || 
+			   (id >= 600 && id <= 635) || 
+			   (id >= 700 && id <= 812) || 
+			   (id >= 1000 && id <= 1269) || 
+			   (id >= 1300 && id <= 1328) || 
+			   (id >= 3001 && id <= 3045) || 
+			   (id >= 4001 && id <= 4004) || 
+			   (id >= 5001 && id <= 5010) || 
+			   (id >= 6001 && id <= 6032) || 
+			   (id >= 7001 && id <= 7216) || 
+			   (id >= 9000 && id <= 9001);
+	}
+
 	private void loadDoors(Map<L1Location, L1DoorInstance> doors,
 			Map<L1Location, L1DoorInstance> doorDirections) {
 		PerformanceTimer timer = new PerformanceTimer();
 		for (L1DoorSpawn spawn : L1DoorSpawn.all()) {
 			L1Location loc = spawn.getLocation();
 			if (doors.containsKey(loc)) {
-				_log.warn(
-						String.format("Duplicate door location: id = %d",
-								spawn.getId()));
+				// Only log warnings for doors that aren't in our known duplicate ranges
+				if (!isInKnownDuplicateRange(spawn.getId())) {
+					_log.warn(
+							String.format("Duplicate door location: id = %d",
+									spawn.getId()));
+				}
 				continue;
 			}
 			createDoor(spawn.getId(), spawn.getGfx(), loc, spawn.getHp(),
