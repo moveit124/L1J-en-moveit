@@ -92,10 +92,10 @@ public class PCommands {
 	
 	//Hardcoded durations for -buff
 	//Might return and change to load from DB instead
-	private static int[] BuffSkillsDuration = { 3600, 1800, 1200,
-			1200, 960, 1800, 1200, 1200,
+	private static int[] BuffSkillsDuration = { 3600, 1800, 1200, 1200,
+			1800, 960, 1200, 1200, 
 			1200, 2400, 960, 1200, 960};
-
+	//Test
 	// Starting experiment to see whether caching common messages has an
 	// effect.
 	private static final S_SystemMessage DropHelp = new S_SystemMessage(
