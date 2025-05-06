@@ -24,10 +24,12 @@ docs/workflowRez.md
 
 # Ignore local server configuration
 config/server.properties
-config/
 
 .project
 .classpath
 
 # Additional files
 lib/
+
+# Local file monitor tools
+/tools/file_monitor/
