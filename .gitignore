@@ -29,7 +29,7 @@ lib/
 #config/
 
 # Ignore all .properties files anywhere (if you want this globally)
-*.properties
+#*.properties
 
 # Ignore Eclipse/IDE-specific files
 .project
