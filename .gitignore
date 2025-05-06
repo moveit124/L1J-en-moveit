@@ -26,7 +26,7 @@ docs/workflowRez.md
 lib/
 
 # Ignore entire config folder and all properties files inside
-config/
+#config/
 
 # Ignore all .properties files anywhere (if you want this globally)
 *.properties
