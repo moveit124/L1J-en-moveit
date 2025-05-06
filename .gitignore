@@ -1,14 +1,14 @@
 l1jen.jar
 /bin
-/log
-*.iml
-*.ipr
-*.iws
-.gradle
-.idea
-.metadata
-build
-.settings/org.eclipse.core.resources.prefs
+/log/
+/*.iml
+/*.ipr
+/*.iws
+.gradle/
+/.idea/
+/.metadata/
+/build/
+/.settings/org.eclipse.core.resources.prefs
 
 # macOS system files
 .DS_Store
@@ -22,12 +22,21 @@ emblem/
 # User-specific workflow/guide files
 docs/workflowRez.md
 
-# Ignore local server configuration
-config/server.properties
+# Ignore libraries
+lib/
+
+# Ignore entire config folder and all properties files inside
 config/
 
+# Ignore all .properties files anywhere (if you want this globally)
+*.properties
+
+# Ignore Eclipse/IDE-specific files
 .project
 .classpath
 
-# Additional files
+=======
 lib/
+
+config/server.properties
+>>>>>>> origin/devMove
