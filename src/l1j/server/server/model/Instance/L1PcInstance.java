@@ -4361,4 +4361,19 @@ public class L1PcInstance extends L1Character {
 	public String getBotCheckQuestionText() {
 	    return this.botCheckQuestionText;
 	}
+	private Timestamp LastPvP;
+	
+	public void setLastPvP(boolean NormalZone) {
+	    long now = System.currentTimeMillis();
+	    if (NormalZone) {
+	        LastPvP = new Timestamp(now); // Normal zone → full time
+	    } else {
+	        LastPvP = new Timestamp(now - (15 * 1000)); 
+	        // Combat zone → already 15 sec ago, so only 15 sec left
+	    }
+	}
+
+	public Timestamp getLastPvP() {
+	    return LastPvP;
+	}
 }

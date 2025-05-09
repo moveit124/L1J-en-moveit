@@ -110,8 +110,6 @@ public class PCommands {
 			"You cannot use -buff in your current state.");
 	private static final S_SystemMessage MapBuff = new S_SystemMessage(
 			"You cannot use -buff in this location");
-	private static final S_SystemMessage BuffLevel = new S_SystemMessage(
-			"You must be level 45 to use -buff.");
 	private static final S_SystemMessage NoWarpArea = new S_SystemMessage(
 			"You cannot -warp in this area.");
 	private static final S_SystemMessage NoWarpState = new S_SystemMessage(
@@ -141,8 +139,6 @@ public class PCommands {
 	private static final S_SystemMessage OnlyDarkElvesTurn = new S_SystemMessage(
 			"Only Dark Elves can use -turn.");
 	private static final S_SystemMessage ReportHelp = new S_SystemMessage("-report <charname> <reason>");
-
-	private static boolean firstCastAnimation = true;
 	
 	private PCommands() {
 	}
@@ -271,6 +267,21 @@ public class PCommands {
 			player.sendPackets(NoBuff);
 			return;
 		}
+		
+		if (player.getLastPvP() != null) {
+		    long lastTime = player.getLastPvP().getTime();
+		    long now = System.currentTimeMillis();
+		    long diffSeconds = (now - lastTime) / 1000;
+
+		    if (diffSeconds < 30) {
+		        long remaining = 30 - diffSeconds;
+		        player.sendPackets(new S_SystemMessage(
+		            "You are in PvP and cannot use -buff for " + remaining + " seconds."
+		        ));
+		        return;
+		    }
+		}
+		
 		if (player.getMapId() >= 5124 && player.getMapId() <= 5145) {
 			player.sendPackets(MapBuff);
 			return;
@@ -279,7 +290,7 @@ public class PCommands {
 		if (player.isPrivateShop() || player.hasSkillEffect(EARTH_BIND) || player.hasSkillEffect(SHOCK_STUN)
 				|| player.hasSkillEffect(MASS_SHOCK_STUN) || player.hasSkillEffect(BONE_BREAK)
 				|| player.hasSkillEffect(CONFUSION)
-				|| player.isParalyzed() || player.isPinkName()
+				|| player.isParalyzed()
 				|| player.isSleeped() || player.isDead()
 				|| player.getMapId() == 99) {
 			player.sendPackets(CannotBuff);
@@ -319,6 +330,9 @@ public class PCommands {
 			skillUse.handleCommands(player, skillId, player.getId(),
 					player.getX(), player.getY(), null, BuffSkillsDuration[i],
 					L1SkillUse.TYPE_SPELLSC);
+		}
+		if (firstCastAnimation) {
+		    player.sendPackets(new S_SystemMessage("You cannot use -buff: no learned skills, required items, or magic scrolls available."));
 		}
 	}
 

@@ -103,6 +103,15 @@ public class L1PinkName {
 		
 		boolean isGmSpoofing = victim.isGm() && victim.getSpoofMob() != null;
 
+		if (attacker.getZoneType() ==  ZoneType.Normal) {
+			victim.setLastPvP(true);
+			attacker.setLastPvP(true);
+		}
+		if (attacker.getZoneType() ==  ZoneType.Combat) {
+			victim.setLastPvP(false);
+			attacker.setLastPvP(false);
+		}
+		
 		if (!isGmSpoofing && victim.getLawful() >= 0
 				&& (!victim.isPinkName() || Config.DUAL_PINK)
 				&& (attacker.getLawful() >= 0 || Config.CHAO_PINK)
