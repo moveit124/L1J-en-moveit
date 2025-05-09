@@ -602,19 +602,19 @@ public class L1MonsterInstance extends L1NpcInstance {
 		            pc.sendPackets(new S_SystemMessage(message));
 		        }
 		    }
-	        // Pet Medal's Added to Pet Farming
-	        if (lastAttacker instanceof L1PetInstance) {
-	            L1PetInstance pet = (L1PetInstance) lastAttacker;
-	            if (ThreadLocalRandom.current().nextInt(20) == 0) {  // 1/20 chance
-	            	L1PcInstance owner = (L1PcInstance) pet.getMaster();
-	            	if (owner != null) {
-	            	    owner.getInventory().storeItem(41309, 1);
-			            // Send system message
-			            String message = getName() + " gave you a Pet Match Yellow Gold Medal.";
-			            pc.sendPackets(new S_SystemMessage(message));
-	            	}
-	            }
-	        }
+		 // Pet Medal's Added to Pet Farming
+		    if (getLevel() >= 32 && lastAttacker instanceof L1PetInstance) {
+		        L1PetInstance pet = (L1PetInstance) lastAttacker;
+		        if (ThreadLocalRandom.current().nextInt(20) == 0) {  // 1/20 chance
+		            L1PcInstance owner = (L1PcInstance) pet.getMaster();
+		            if (owner != null) {
+		                owner.getInventory().storeItem(41309, 1);
+		                // Send system message
+		                String message = getName() + " gave you a Pet Match Yellow Gold Medal.";
+		                owner.sendPackets(new S_SystemMessage(message));
+		            }
+		        }
+		    }
 		} else if (lastAttacker instanceof L1EffectInstance) {
 			ArrayList<L1Character> targetList = _hateList.toTargetArrayList();
 			ArrayList<Integer> hateList = _hateList.toHateArrayList();
