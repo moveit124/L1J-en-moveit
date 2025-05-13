@@ -603,18 +603,26 @@ public class L1MonsterInstance extends L1NpcInstance {
 			}
 
 		 // Pet Medal's Added to Pet Farming
-		    if (getLevel() >= 32 && lastAttacker instanceof L1PetInstance) {
-		        L1PetInstance pet = (L1PetInstance) lastAttacker;
-		        if (ThreadLocalRandom.current().nextInt(20) == 0) {  // 1/20 chance
-		            L1PcInstance owner = (L1PcInstance) pet.getMaster();
-		            if (owner != null) {
-		                owner.getInventory().storeItem(41309, 1);
-		                // Send system message
-		                String message = getName() + " gave you a Pet Match Yellow Gold Medal.";
-		                owner.sendPackets(new S_SystemMessage(message));
-		            }
-		        }
-		    }
+			if (getLevel() >= 32 && lastAttacker instanceof L1PetInstance) {
+			    L1PetInstance pet = (L1PetInstance) lastAttacker;
+
+			    double chance;
+			    if (getLevel() >= 60) {
+			        chance = 1.0 / 20; // Max chance at level 60+
+			    } else {
+			        double scale = (getLevel() - 32) / (60.0 - 32.0);
+			        chance = (1.0 / 50) + scale * ((1.0 / 20) - (1.0 / 50));
+			    }
+
+			    if (ThreadLocalRandom.current().nextDouble() < chance) {
+			        L1PcInstance owner = (L1PcInstance) pet.getMaster();
+			        if (owner != null) {
+			            owner.getInventory().storeItem(41309, 1);
+			            String message = getName() + " gave you a Pet Match Yellow Gold Medal.";
+			            owner.sendPackets(new S_SystemMessage(message));
+			        }
+			    }
+			}
 		} else if (lastAttacker instanceof L1EffectInstance) {
 			ArrayList<L1Character> targetList = _hateList.toTargetArrayList();
 			ArrayList<Integer> hateList = _hateList.toHateArrayList();
