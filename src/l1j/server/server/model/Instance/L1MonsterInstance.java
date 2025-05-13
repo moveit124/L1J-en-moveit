@@ -38,6 +38,7 @@ import l1j.server.server.serverpackets.S_NPCTalkReturn;
 import l1j.server.server.serverpackets.S_RemoveObject;
 import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SkillBrave;
+import l1j.server.server.serverpackets.S_SystemMessage;
 import l1j.server.server.serverpackets.ServerBasePacket;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.CalcExp;
@@ -516,7 +517,6 @@ public class L1MonsterInstance extends L1NpcInstance {
 				}
 
 				startDeleteTimer();
-				
 				// Note: this will not count bosses spawned by GMs.
 				if(_lastAttacker instanceof L1PcInstance &&
 						getSpawn() instanceof L1BossSpawn) {
@@ -584,6 +584,44 @@ public class L1MonsterInstance extends L1NpcInstance {
 				} else {
 				    pc.addMonsterKillBuffer(1.0);
 				}
+			}
+			// Crystal of Bravery Added to Mobs > Level 34
+			if (getLevel() >= 34 && getLevel() <= 53 && pc.getMapId() == 70) { // Only on Forgotten Island, Level 34–53
+			    double chance;
+			    if (getLevel() >= 53) {
+			        chance = 1.0 / 1000; // best rate for 53
+			    } else {
+			        double scale = (getLevel() - 34) / (53.0 - 34.0);
+			        chance = (1.0 / 2500) + scale * ((1.0 / 1000) - (1.0 / 2500));
+			    }
+
+			    if (ThreadLocalRandom.current().nextDouble() < chance) {
+			        pc.getInventory().storeItem(49143, 1); // Crystal of Bravery
+			        String message = getName() + " gave you a Crystal of Bravery.";
+			        pc.sendPackets(new S_SystemMessage(message));
+			    }
+			}
+
+		 // Pet Medal's Added to Pet Farming
+			if (getLevel() >= 32 && lastAttacker instanceof L1PetInstance) {
+			    L1PetInstance pet = (L1PetInstance) lastAttacker;
+
+			    double chance;
+			    if (getLevel() >= 60) {
+			        chance = 1.0 / 20; // Max chance at level 60+
+			    } else {
+			        double scale = (getLevel() - 32) / (60.0 - 32.0);
+			        chance = (1.0 / 50) + scale * ((1.0 / 20) - (1.0 / 50));
+			    }
+
+			    if (ThreadLocalRandom.current().nextDouble() < chance) {
+			        L1PcInstance owner = (L1PcInstance) pet.getMaster();
+			        if (owner != null) {
+			            owner.getInventory().storeItem(41309, 1);
+			            String message = getName() + " gave you a Pet Match Yellow Gold Medal.";
+			            owner.sendPackets(new S_SystemMessage(message));
+			        }
+			    }
 			}
 		} else if (lastAttacker instanceof L1EffectInstance) {
 			ArrayList<L1Character> targetList = _hateList.toTargetArrayList();

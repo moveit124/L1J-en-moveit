@@ -1936,6 +1936,31 @@ private void runSkill() {
 						L1PcInstance pri = (L1PcInstance) _user;
 						pri.sendPackets(new S_TrueTarget(_targetID, pri.getId(), _message));
 						L1Clan clan = pri.getClan();
+						if (_target instanceof L1PcInstance && _user instanceof L1PcInstance) {
+							L1PcInstance caster = (L1PcInstance) _user;
+							L1PcInstance newTarget = (L1PcInstance) _target;
+
+							// Remove True Target from old target if there is one
+							int oldTargetId = caster.getActiveTrueTargetId();
+							if (oldTargetId != -1 && oldTargetId != newTarget.getId()) {
+								L1Object maybeOldTarget = L1World.getInstance().findObject(oldTargetId);
+								if (maybeOldTarget instanceof L1PcInstance) {
+									L1PcInstance oldTarget = (L1PcInstance) maybeOldTarget;
+									oldTarget.applyTrueTargetDebuff(0, 0, 0); // Clear bonus and duration
+									System.out.println(String.format("[TrueTarget] Removed previous True Target debuff from %s", oldTarget.getName()));
+								}
+							}
+
+							// Apply new debuff
+							int bonusPercent = caster.getLevel() / 10;
+							if (bonusPercent > 0) {
+								newTarget.applyTrueTargetDebuff(bonusPercent, 16000, caster.getClanid());
+								caster.setActiveTrueTargetId(newTarget.getId());
+								System.out.println(String.format("[TrueTarget] %s applied new debuff to %s", caster.getName(), newTarget.getName()));
+							}
+						}
+
+
 						if (clan != null) {
 							L1PcInstance players[] = clan.getOnlineClanMember();
 							for (L1PcInstance pc : players) {

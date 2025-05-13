@@ -40,7 +40,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -65,6 +67,7 @@ import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.MapTimerTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
+import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.encryptions.Opcodes;
 import l1j.server.server.model.AcceleratorChecker;
 import l1j.server.server.model.BotCheckActivityManager;
@@ -125,6 +128,7 @@ import l1j.server.server.serverpackets.S_Invis;
 import l1j.server.server.serverpackets.S_Lawful;
 import l1j.server.server.serverpackets.S_Liquor;
 import l1j.server.server.serverpackets.S_MPUpdate;
+import l1j.server.server.serverpackets.S_NPCPack;
 import l1j.server.server.serverpackets.S_OtherCharPacks;
 import l1j.server.server.serverpackets.S_OwnCharStatus;
 import l1j.server.server.serverpackets.S_PacketBox;
@@ -144,6 +148,7 @@ import l1j.server.server.templates.L1Pet;
 import l1j.server.server.templates.L1PrivateShopBuyList;
 import l1j.server.server.templates.L1PrivateShopSellList;
 import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.Teleportation;
 import l1j.server.server.datatables.ExcludeTable;
@@ -2765,6 +2770,29 @@ public class L1PcInstance extends L1Character {
 				damage *= 1.2;
 			}
 
+			if (this instanceof L1PcInstance && attacker instanceof L1PcInstance) {
+				L1PcInstance victim = (L1PcInstance) this;
+				L1PcInstance attackerPc = (L1PcInstance) attacker;
+				int bonus = victim.getTrueTargetDebuffBonusPercent(attackerPc);
+				if (bonus > 0) {
+					double oldDamage = damage;
+					double bonusDamage = Math.ceil(oldDamage * bonus / 100.0);
+					damage += bonusDamage;
+
+					//System.out.println(String.format("[TrueTarget] %s (clan %d) hit %s (clan %d) with TrueTarget bonus: +%d%% | %.2f + %.0f → %.2f",
+					//	attackerPc.getName(), attackerPc.getClanid(),
+					//	victim.getName(), victim.getClanid(),
+					//	bonus, oldDamage, bonusDamage, damage));
+
+				} else {
+				//	System.out.println(String.format("[TrueTarget] %s attacked %s — No TT bonus (clan check: %d vs %d, debuffTime: %d)",
+				//		attackerPc.getName(), victim.getName(),
+				//		attackerPc.getClanid(), victim._trueTargetDebuffClanId,
+				//		(victim._trueTargetDebuffUntil & 0x0000FFFFFFFFFFFFL) - System.currentTimeMillis()));
+				}
+			}
+
+			
 			int newHp = getCurrentHp() - (int) (damage);
 			if (newHp > getMaxHp()) {
 				newHp = getMaxHp();
@@ -4361,4 +4389,113 @@ public class L1PcInstance extends L1Character {
 	public String getBotCheckQuestionText() {
 	    return this.botCheckQuestionText;
 	}
+	private Timestamp LastPvP;
+	
+	public void setLastPvP(boolean NormalZone) {
+	    long now = System.currentTimeMillis();
+	    if (NormalZone) {
+	        LastPvP = new Timestamp(now); // Normal zone → full time
+	    } else {
+	        LastPvP = new Timestamp(now - (15 * 1000)); 
+	        // Combat zone → already 15 sec ago, so only 15 sec left
+	    }
+	}
+
+	public Timestamp getLastPvP() {
+	    return LastPvP;
+	}
+	
+	private long _trueTargetDebuffUntil = 0;
+
+	public void setTrueTargetDebuffUntil(long timeMillis) {
+		_trueTargetDebuffUntil = timeMillis;
+	}
+
+	public boolean hasTrueTargetDebuff() {
+		return System.currentTimeMillis() < _trueTargetDebuffUntil;
+	}
+
+	private int _trueTargetDebuffClanId = 0;
+
+	public void applyTrueTargetDebuff(int bonusPercent, int durationMillis, int royalClanId) {
+		long expiryTime = System.currentTimeMillis() + durationMillis;
+		_trueTargetDebuffUntil = expiryTime | ((long) bonusPercent << 48);
+		_trueTargetDebuffClanId = royalClanId;
+	}
+
+	public int getTrueTargetDebuffBonusPercent(L1Character attacker) {
+		long now = System.currentTimeMillis();
+		long expiry = _trueTargetDebuffUntil & 0x0000FFFFFFFFFFFFL;
+
+		if (now < expiry && attacker instanceof L1PcInstance) {
+			L1PcInstance pc = (L1PcInstance) attacker;
+			if (pc.getClanid() == _trueTargetDebuffClanId && _trueTargetDebuffClanId != 0) {
+				return (int) (_trueTargetDebuffUntil >>> 48);
+			}
+		}
+		return 0;
+	}
+	
+	private int _activeTrueTargetId = -1; // The last target ID that was marked by this player
+
+	public int getActiveTrueTargetId() {
+		return _activeTrueTargetId;
+	}
+
+	public void setActiveTrueTargetId(int id) {
+		_activeTrueTargetId = id;
+	}
+
+	private L1NpcInstance _auraNpc;
+
+	public void setAuraNpc(L1NpcInstance npc) {
+	    _auraNpc = npc;
+	}
+
+	public L1NpcInstance getAuraNpc() {
+	    return _auraNpc;
+	}
+
+	public boolean hasAura() {
+	    return _auraNpc != null;
+	}
+
+	public void removeAura() {
+	    if (_auraNpc != null) {
+	        _auraNpc.deleteMe();
+	        _auraNpc = null;
+	    }
+	}
+	
+	public void enableAuraEffect(int npcId) {
+	    if (hasAura()) return;
+
+	    L1Npc template = NpcTable.getInstance().getTemplate(npcId);
+	    if (template == null) {
+	        return;
+	    }
+
+	    Set<L1Object> before = new HashSet<>(L1World.getInstance().getAllVisibleObjects().values());
+	    L1SpawnUtil.spawn(this, npcId, 0, 0);
+	    Set<L1Object> after = new HashSet<>(L1World.getInstance().getAllVisibleObjects().values());
+	    after.removeAll(before);
+
+	    for (L1Object obj : after) {
+	        if (obj instanceof L1NpcInstance) {
+	            L1NpcInstance aura = (L1NpcInstance) obj;
+	            aura.setHeading(getHeading());
+	            aura.setMaster(this);
+	            aura.setX(getX());
+	            aura.setY(getY());
+	            aura.setMoveSpeed(1);
+	            aura.setBraveSpeed(1);
+	            aura.setStatus(0);
+	            setAuraNpc(aura);
+	            break;
+	        }
+	    }
+	    
+	}
+
+
 }
