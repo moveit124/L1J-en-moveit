@@ -585,23 +585,23 @@ public class L1MonsterInstance extends L1NpcInstance {
 				    pc.addMonsterKillBuffer(1.0);
 				}
 			}
-			//Crystal of Bravery Added to Mobs > Level 32
-		    if (getLevel() >= 32) {
-		        double chance;
-		        if (getLevel() >= 60) {
-		            chance = 1.0 / 1500; // best rate for 60+
-		        } else {
-		            double scale = (getLevel() - 32) / (60.0 - 32.0);
-		            chance = (1.0 / 5000) + scale * ((1.0 / 1500) - (1.0 / 5000));
-		        }
+			// Crystal of Bravery Added to Mobs > Level 32
+			if (getLevel() >= 32 && pc.getMapId() == 70) { // Only on Forgotten Island
+			    double chance;
+			    if (getLevel() >= 60) {
+			        chance = 1.0 / 1500; // best rate for 60+
+			    } else {
+			        double scale = (getLevel() - 32) / (60.0 - 32.0);
+			        chance = (1.0 / 5000) + scale * ((1.0 / 1500) - (1.0 / 5000));
+			    }
 
-		        if (ThreadLocalRandom.current().nextDouble() < chance) {
-		            pc.getInventory().storeItem(49143, 1); // Crystal of Bravery
-		            // Send system message
-		            String message = getName() + " gave you a Crystal of Bravery.";
-		            pc.sendPackets(new S_SystemMessage(message));
-		        }
-		    }
+			    if (ThreadLocalRandom.current().nextDouble() < chance) {
+			        pc.getInventory().storeItem(49143, 1); // Crystal of Bravery
+			        String message = getName() + " gave you a Crystal of Bravery.";
+			        pc.sendPackets(new S_SystemMessage(message));
+			    }
+			}
+
 		 // Pet Medal's Added to Pet Farming
 		    if (getLevel() >= 32 && lastAttacker instanceof L1PetInstance) {
 		        L1PetInstance pet = (L1PetInstance) lastAttacker;
