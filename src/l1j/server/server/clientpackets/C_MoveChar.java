@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import l1j.server.Config;
+import l1j.server.server.GeneralThreadPool;
 import l1j.server.server.command.executor.L1Follow;
 import l1j.server.server.log.LogSpeedHack;
 import l1j.server.server.model.AcceleratorChecker;
@@ -35,10 +36,12 @@ import l1j.server.server.model.DungeonRandom;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Teleport;
 import l1j.server.server.model.ZoneType;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.trap.L1WorldTraps;
 import l1j.server.server.network.Client;
 import l1j.server.server.serverpackets.S_MoveCharPacket;
+import l1j.server.server.serverpackets.S_NPCPack;
 
 // Referenced classes of package l1j.server.server.clientpackets:
 // ClientBasePacket
@@ -132,6 +135,27 @@ public class C_MoveChar extends ClientBasePacket {
 		}
 		pc.getLocation().set(locx, locy);
 		pc.setHeading(heading);
+
+		if (pc.hasAura()) {
+		    L1NpcInstance aura = pc.getAuraNpc();
+		    if (aura != null && !aura.isDead()) {
+		        GeneralThreadPool.getInstance().execute(() -> {
+		            try {
+		                Thread.sleep(150); // 1/4 second delay
+		            } catch (InterruptedException ignored) {}
+
+		            if (!aura.getLocation().isSamePoint(pc.getLocation()) || aura.getMapId() != pc.getMapId()) {
+		                aura.setX(pc.getX());
+		                aura.setY(pc.getY());
+		                aura.setMap(pc.getMapId());
+		                aura.setHeading(pc.getHeading());
+		                aura.broadcastPacket(new S_NPCPack(aura)); // Forces client update
+		            }
+		        });
+		    }
+		}
+
+
 		
 		if (pc.isGmInvis() || pc.isGhost()) {
 		} else if (pc.isInvisble()) {

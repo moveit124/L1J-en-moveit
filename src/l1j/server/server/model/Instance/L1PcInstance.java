@@ -40,7 +40,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -65,6 +67,7 @@ import l1j.server.server.datatables.ItemTable;
 import l1j.server.server.datatables.MapTimerTable;
 import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.datatables.PetTable;
+import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.encryptions.Opcodes;
 import l1j.server.server.model.AcceleratorChecker;
 import l1j.server.server.model.BotCheckActivityManager;
@@ -125,6 +128,7 @@ import l1j.server.server.serverpackets.S_Invis;
 import l1j.server.server.serverpackets.S_Lawful;
 import l1j.server.server.serverpackets.S_Liquor;
 import l1j.server.server.serverpackets.S_MPUpdate;
+import l1j.server.server.serverpackets.S_NPCPack;
 import l1j.server.server.serverpackets.S_OtherCharPacks;
 import l1j.server.server.serverpackets.S_OwnCharStatus;
 import l1j.server.server.serverpackets.S_PacketBox;
@@ -144,6 +148,7 @@ import l1j.server.server.templates.L1Pet;
 import l1j.server.server.templates.L1PrivateShopBuyList;
 import l1j.server.server.templates.L1PrivateShopSellList;
 import l1j.server.server.utils.CalcStat;
+import l1j.server.server.utils.L1SpawnUtil;
 import l1j.server.server.utils.SQLUtil;
 import l1j.server.server.utils.Teleportation;
 import l1j.server.server.datatables.ExcludeTable;
@@ -4439,6 +4444,57 @@ public class L1PcInstance extends L1Character {
 
 	public void setActiveTrueTargetId(int id) {
 		_activeTrueTargetId = id;
+	}
+
+	private L1NpcInstance _auraNpc;
+
+	public void setAuraNpc(L1NpcInstance npc) {
+	    _auraNpc = npc;
+	}
+
+	public L1NpcInstance getAuraNpc() {
+	    return _auraNpc;
+	}
+
+	public boolean hasAura() {
+	    return _auraNpc != null;
+	}
+
+	public void removeAura() {
+	    if (_auraNpc != null) {
+	        _auraNpc.deleteMe();
+	        _auraNpc = null;
+	    }
+	}
+	
+	public void enableAuraEffect(int npcId) {
+	    if (hasAura()) return;
+
+	    L1Npc template = NpcTable.getInstance().getTemplate(npcId);
+	    if (template == null) {
+	        return;
+	    }
+
+	    Set<L1Object> before = new HashSet<>(L1World.getInstance().getAllVisibleObjects().values());
+	    L1SpawnUtil.spawn(this, npcId, 0, 0);
+	    Set<L1Object> after = new HashSet<>(L1World.getInstance().getAllVisibleObjects().values());
+	    after.removeAll(before);
+
+	    for (L1Object obj : after) {
+	        if (obj instanceof L1NpcInstance) {
+	            L1NpcInstance aura = (L1NpcInstance) obj;
+	            aura.setHeading(getHeading());
+	            aura.setMaster(this);
+	            aura.setX(getX());
+	            aura.setY(getY());
+	            aura.setMoveSpeed(1);
+	            aura.setBraveSpeed(1);
+	            aura.setStatus(0);
+	            setAuraNpc(aura);
+	            break;
+	        }
+	    }
+	    
 	}
 
 

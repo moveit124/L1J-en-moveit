@@ -76,6 +76,7 @@ import l1j.server.server.model.skill.L1SkillId;
 import l1j.server.server.model.skill.L1SkillUse;
 import l1j.server.server.serverpackets.S_HPMeter;
 import l1j.server.server.serverpackets.S_SystemMessage;
+import l1j.server.server.templates.L1Npc;
 
 public class PCommands {
 	private static Logger _log = LoggerFactory.getLogger(PCommands.class.getName());
@@ -154,6 +155,28 @@ public class PCommands {
 		try {
 			if (cmd2.equalsIgnoreCase("help")) {
 				showPHelp(player);
+			}else if (cmd2.startsWith("aura")) {
+			    if (!player.isGm()) {
+			        player.sendPackets(new S_SystemMessage("Only GMs can use this command."));
+			        return;
+			    }
+
+			    try {
+			        String[] args = cmd2.split(" ");
+			        if (args.length < 2) {
+			            player.sendPackets(new S_SystemMessage("Usage: -aura <gfxId>"));
+			            return;
+			        }
+
+			        int gfxId = Integer.parseInt(args[1]);
+
+			        player.removeAura(); // remove any running aura
+			        player.enableAuraEffect(gfxId); // start new visual aura loop
+
+			        player.sendPackets(new S_SystemMessage("Aura enabled with GFX ID " + gfxId + "."));
+			    } catch (Exception ex) {
+			        player.sendPackets(new S_SystemMessage("Usage: -aura <gfxId>"));
+			    }
 			} else if (cmd2.startsWith("buff")) {
 				buff(player);
 			} else if (cmd2.startsWith("dkbuff")) {
