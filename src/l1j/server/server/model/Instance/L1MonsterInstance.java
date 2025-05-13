@@ -585,14 +585,14 @@ public class L1MonsterInstance extends L1NpcInstance {
 				    pc.addMonsterKillBuffer(1.0);
 				}
 			}
-			// Crystal of Bravery Added to Mobs > Level 32
-			if (getLevel() >= 32 && pc.getMapId() == 70) { // Only on Forgotten Island
+			// Crystal of Bravery Added to Mobs > Level 34
+			if (getLevel() >= 34 && getLevel() <= 53 && pc.getMapId() == 70) { // Only on Forgotten Island, Level 34–53
 			    double chance;
-			    if (getLevel() >= 60) {
-			        chance = 1.0 / 1500; // best rate for 60+
+			    if (getLevel() >= 53) {
+			        chance = 1.0 / 1000; // best rate for 53
 			    } else {
-			        double scale = (getLevel() - 32) / (60.0 - 32.0);
-			        chance = (1.0 / 5000) + scale * ((1.0 / 1500) - (1.0 / 5000));
+			        double scale = (getLevel() - 34) / (53.0 - 34.0);
+			        chance = (1.0 / 2500) + scale * ((1.0 / 1000) - (1.0 / 2500));
 			    }
 
 			    if (ThreadLocalRandom.current().nextDouble() < chance) {
