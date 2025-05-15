@@ -256,10 +256,11 @@ public class BotCheckActivityManager {
         List<String> questionList = new ArrayList<>(BotCheckManager.QUESTIONS.keySet());
         String question = questionList.get(BotCheckManager.RANDOM.nextInt(questionList.size()));
         String expectedAnswer = BotCheckManager.QUESTIONS.get(question);
-
+        
         pc.sendPackets(new S_RawStringDialog(pc.getId(), "Bot Check", question));
         pc.setAwaitingBotCheck(true);
         pc.setBotCheckQuestion(expectedAnswer);
+        pc.setBotCheckQuestionText(question); // ✅ THIS is what's missing
         pc.setBotCheckStartTime(System.currentTimeMillis());
 
         // 🛡️ Add 20-second timeout handler
