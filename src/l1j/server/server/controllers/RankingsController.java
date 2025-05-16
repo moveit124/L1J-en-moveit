@@ -65,6 +65,7 @@ public class RankingsController implements Runnable {
 		}
 		
 		_inFields = builder.deleteCharAt( builder.length() -1 ).toString();
+		
 		_penaltyTypes = Config.ALT_RANKING_PENALTY_TYPES;
 		_minLevel = Config.ALT_RANKING_MIN_LEVEL;
 	}

@@ -110,7 +110,7 @@ public class C_War extends ClientBasePacket {
 			player.sendPackets(new S_ServerMessage(475));
 			return;
 		}
-		
+
 		if(enemyClan.getCastleId() != 0) {
 			L1PcInstance[] clanMembersOnline = player.getClan().getOnlineClanMember();
 			

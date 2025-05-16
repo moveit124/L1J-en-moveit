@@ -47,6 +47,9 @@ public class L1CastleLocation {
 	private static final short GIRAN_INNER_CASTLE_MAP = 52;
 
 	private static final L1Location HeineTower = new L1Location(33524, 33396, 4);
+	private static final L1Location HeineTower1 = new L1Location(33524, 33396, 4);
+	private static final L1Location HeineTower2 = new L1Location(33547, 33398, 4);
+	private static final L1Location HeineTower3 = new L1Location(33497, 33398, 4);
 	private static final L1MapArea HeineArea = new L1MapArea(33458, 33315,
 			33583, 33490, 4);
 	private static final short HEINE_INNER_CASTLE_MAP = 64;
@@ -115,6 +118,36 @@ public class L1CastleLocation {
 	private L1CastleLocation() {
 	}
 
+	public static int[] getHeineTower1Loc() {
+	    return new int[]{HeineTower1.getX(), HeineTower1.getY(), HeineTower1.getMapId()};
+	}
+
+	public static int[] getHeineTower2Loc() {
+	    return new int[]{HeineTower2.getX(), HeineTower2.getY(), HeineTower2.getMapId()};
+	}
+
+	public static int[] getHeineTower3Loc() {
+	    return new int[]{HeineTower3.getX(), HeineTower3.getY(), HeineTower3.getMapId()};
+	}
+	
+	public static int getCastleIdByTowerLocation(int locx, int locy, short mapid) {
+	    // Check Heine main tower
+	    if (locx == HeineTower.getX() && locy == HeineTower.getY() && mapid == HeineTower.getMapId()) {
+	        return HEINE_CASTLE_ID;
+	    }
+	    // Check Heine extra towers
+	    if (locx == HeineTower2.getX() && locy == HeineTower2.getY() && mapid == HeineTower2.getMapId()) {
+	        return HEINE_CASTLE_ID;
+	    }
+	    if (locx == HeineTower3.getX() && locy == HeineTower3.getY() && mapid == HeineTower3.getMapId()) {
+	        return HEINE_CASTLE_ID;
+	    }
+
+	    // Fallback to existing system
+	    return getCastleId(locx, locy, mapid);
+	}
+
+	
 	public static int getCastleId(L1Location loc) {
 		for (Map.Entry<Integer, L1Location> entry : _towers.entrySet()) {
 			if (entry.getValue().equals(loc)) {

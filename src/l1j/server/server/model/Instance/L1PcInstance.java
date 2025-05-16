@@ -130,11 +130,13 @@ import l1j.server.server.serverpackets.S_Liquor;
 import l1j.server.server.serverpackets.S_MPUpdate;
 import l1j.server.server.serverpackets.S_NPCPack;
 import l1j.server.server.serverpackets.S_OtherCharPacks;
+import l1j.server.server.serverpackets.S_OwnCharAttrDef;
 import l1j.server.server.serverpackets.S_OwnCharStatus;
 import l1j.server.server.serverpackets.S_PacketBox;
 import l1j.server.server.serverpackets.S_PinkName;
 import l1j.server.server.serverpackets.S_Poison;
 import l1j.server.server.serverpackets.S_RemoveObject;
+import l1j.server.server.serverpackets.S_SPMR;
 import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SkillIconGFX;
 import l1j.server.server.serverpackets.S_SystemMessage;
@@ -1743,7 +1745,7 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public L1BookMark getBookMark(String name) {
-		for (int i = 0; i < _bookmarks.size(); i++) {
+		for (int i = 1; i < _bookmarks.size(); i++) {
 			L1BookMark element = _bookmarks.get(i);
 			if (element.getName().equalsIgnoreCase(name)) {
 				return element;
@@ -2649,6 +2651,27 @@ public class L1PcInstance extends L1Character {
 
 	public void receiveDamage(L1Character attacker, double damage, boolean isMagicDamage) { //
 		this.setLastAggressiveAct();
+		//Remove inspiration buff if War has Ended (just a backup in case it persists)
+		if (isInspired()) {
+		    long now = System.currentTimeMillis();
+		    if (now - getLastInspiredTimestamp() > 5000) {
+		        // Double-check that this player is NOT in an active war anymore
+		        boolean stillInWar = L1World.getInstance().getWarList().stream()
+		            .anyMatch(war -> war.CheckClanInWar(getClanname()));
+
+		        if (!stillInWar) {
+		            addAc(5);
+		            addMr(-10);
+		            setInspired(false);
+		            setLastInspiredTimestamp(0);
+		            sendPackets(new S_OwnCharAttrDef(this));
+		            sendPackets(new S_OwnCharStatus(this));
+		            sendPackets(new S_SPMR(this));
+		            System.out.println("[INSPIRATION] Removed expired buff from " + getName() + " (not in war anymore, on damage).");
+		        }
+		    }
+		}
+
 
 		if (attacker instanceof L1PcInstance) {
 			((L1PcInstance) attacker).setLastAggressiveAct();
@@ -4495,6 +4518,26 @@ public class L1PcInstance extends L1Character {
 	        }
 	    }
 	    
+	}
+
+	private long _lastInspiredTimestamp = 0;
+
+	public long getLastInspiredTimestamp() {
+	    return _lastInspiredTimestamp;
+	}
+
+	public void setLastInspiredTimestamp(long timestamp) {
+	    _lastInspiredTimestamp = timestamp;
+	}
+	
+	private boolean _isInspired;
+
+	public boolean isInspired() {
+	    return _isInspired;
+	}
+
+	public void setInspired(boolean flag) {
+	    _isInspired = flag;
 	}
 
 

@@ -32,6 +32,7 @@ import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Teleport;
+import l1j.server.server.model.L1War;
 import l1j.server.server.model.L1WarSpawn;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1CrownInstance;
@@ -98,7 +99,7 @@ public class WarTimeController implements Runnable {
 		_l1castle[id] = castle;
 	}
 
-	public static Calendar getWarStartTime(int id) {
+	public Calendar getWarStartTime(int id) {
 		return _war_start_time[id];
 	}
 
@@ -133,7 +134,7 @@ public class WarTimeController implements Runnable {
 		}
 	}
 	
-	private void clearCastle(int castleId) {
+	public void clearCastle(int castleId) {
 		int[] loc = new int[3];
 		
 		Collection<L1PcInstance> onlineAndOfflinePlayers = new ArrayList<L1PcInstance>();
@@ -173,6 +174,7 @@ public class WarTimeController implements Runnable {
 					_is_now_war[i] = true;
 					L1WarSpawn warspawn = new L1WarSpawn();
 					warspawn.SpawnFlag(castleId);
+					
 					for (L1DoorInstance door : DoorTable.getInstance()
 							.getDoorList()) {
 						if (L1CastleLocation.checkInWarArea(castleId, door)) {

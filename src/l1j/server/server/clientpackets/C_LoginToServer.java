@@ -421,7 +421,6 @@ public class C_LoginToServer extends ClientBasePacket {
 			}
 		}
 		pc.checkPersistentMute(pc);
-		
 
 		long lastReport = LogReporterTable.getLastSuspicion(pc.getId());
 		long lastReportEndTime = lastReport + (Config.REPORT_TIME_MINUTES * 60000);

@@ -239,7 +239,7 @@ public class PacketHandler {
 			// _client.addToClientPacketLog(i, packet); // only add to the historical log if
 			// we aren't logging to the database
 		}
-		//System.out.println("Captured Packet Opcode: " + i + " - Full Packet: " + Arrays.toString(abyte0));
+		System.out.println("Captured Packet Opcode: " + i + " - Full Packet: " + Arrays.toString(abyte0));
 
 		switch (i) {
 		case C_OPCODE_SENDLOCATION:

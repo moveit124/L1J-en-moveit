@@ -74,6 +74,7 @@ import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1Teleport;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.L1UltimateBattle;
+import l1j.server.server.model.L1War;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1DoorInstance;
 import l1j.server.server.model.Instance.L1HousekeeperInstance;
@@ -629,8 +630,13 @@ public class C_NpcAction extends ClientBasePacket {
 					htmlid = "";
 				}
 			}
-		} else if (s.equalsIgnoreCase("declarewar")) {
+		} else if (s.equalsIgnoreCase("declare")) {
 			L1Clan clan = L1World.getInstance().getClan(pc.getClanname());
+			System.out.println("npcid = " + npcid);
+			System.out.println("classId = " + pc.getClassId());
+			System.out.println("isExistDefenseClan = " + isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID));
+			System.out.println("defenseClanName = " + getDefenseClanName(L1CastleLocation.HEINE_CASTLE_ID));
+
 			if (npcid == 60514 && pc.getClassId() == 1
 					&& isExistDefenseClan(L1CastleLocation.KENT_CASTLE_ID)) {
 				pc.sendPackets(new S_War(1, clan.getClanName(),
@@ -651,12 +657,27 @@ public class C_NpcAction extends ClientBasePacket {
 				pc.sendPackets(new S_War(1, clan.getClanName(),
 						getDefenseClanName(L1CastleLocation.GIRAN_CASTLE_ID)));
 				WarTimeController.getInstance();
-			} else if (npcid == 70857 && pc.getClassId() == 1
-					&& isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID)) {
-				pc.sendPackets(new S_War(1, clan.getClanName(),
-						getDefenseClanName(L1CastleLocation.HEINE_CASTLE_ID)));
-				WarTimeController.getInstance();
-			} else if (npcid == 60530 || npcid == 60531 && pc.getClassId() == 1
+			}else if (npcid == 70857 
+			        && (pc.getClassId() == 0 || pc.getClassId() == 1)
+			        && isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID)) {
+
+			    String attackerClan = clan.getClanName();
+			    String defenderClan = getDefenseClanName(L1CastleLocation.HEINE_CASTLE_ID);
+
+			    boolean foundExistingWar = false;
+			    for (L1War war : L1World.getInstance().getWarList()) {
+			        if (war.CheckClanInWar(defenderClan)) {
+			            war.DeclareWar(attackerClan, defenderClan);
+			            war.AddAttackClan(attackerClan);
+			            foundExistingWar = true;
+			            break;
+			        }
+			    }
+
+			    if (!foundExistingWar) {
+			        new L1War().handleCommands(1, attackerClan, defenderClan);
+			    }
+			}  else if (npcid == 60530 || npcid == 60531 && pc.getClassId() == 1
 					&& isExistDefenseClan(L1CastleLocation.DOWA_CASTLE_ID)) {
 				pc.sendPackets(new S_War(1, clan.getClanName(),
 						getDefenseClanName(L1CastleLocation.DOWA_CASTLE_ID)));

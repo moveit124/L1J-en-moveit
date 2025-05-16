@@ -46,18 +46,31 @@ public class L1WarSpawn {
 	}
 
 	public void SpawnTower(int castleId) {
-		int npcId = 81111;
-		if (castleId == L1CastleLocation.ADEN_CASTLE_ID) {
-			npcId = 81189;
-		}
-		L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
-		int[] loc = new int[3];
-		loc = L1CastleLocation.getTowerLoc(castleId);
-		SpawnWarObject(l1npc, loc[0], loc[1], (short) (loc[2]));
-		if (castleId == L1CastleLocation.ADEN_CASTLE_ID) {
-			spawnSubTower();
-		}
+	    int npcId = 81111;
+	    if (castleId == L1CastleLocation.ADEN_CASTLE_ID) {
+	        npcId = 81189;
+	    }
+
+	    L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+
+	    // Always spawn the main tower
+	    int[] mainLoc = L1CastleLocation.getTowerLoc(castleId);
+	    SpawnWarObject(l1npc, mainLoc[0], mainLoc[1], (short) (mainLoc[2]));
+
+	    // Special: spawn extra towers for Heine
+	    if (castleId == L1CastleLocation.HEINE_CASTLE_ID) {
+	        int[] extraLoc1 = L1CastleLocation.getHeineTower2Loc();
+	        SpawnWarObject(l1npc, extraLoc1[0], extraLoc1[1], (short) (extraLoc1[2]));
+
+	        int[] extraLoc2 = L1CastleLocation.getHeineTower3Loc();
+	        SpawnWarObject(l1npc, extraLoc2[0], extraLoc2[1], (short) (extraLoc2[2]));
+	    }
+
+	    if (castleId == L1CastleLocation.ADEN_CASTLE_ID) {
+	        spawnSubTower();
+	    }
 	}
+
 
 	private void spawnSubTower() {
 		L1Npc l1npc;
