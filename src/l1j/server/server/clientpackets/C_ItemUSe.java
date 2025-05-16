@@ -229,6 +229,9 @@ public class C_ItemUSe extends ClientBasePacket {
 		L1PcInventory inventory = pc.getInventory();
 
 		int use_type = l1iteminstance.getItem().getUseType();
+		int mapId = 0;
+		int y = 0;
+		int x = 0;
 		if (itemId == 40088 || itemId == 40096 || itemId == 140088) {
 			s = readS();
 		} else if (itemId == SCROLL_OF_ENCHANT_ARMOR || itemId == SCROLL_OF_ENCHANT_WEAPON
@@ -254,10 +257,10 @@ public class C_ItemUSe extends ClientBasePacket {
 			 * Reading the map coordinates from the client packet
 			 */
 			
-			int mapId = readH();
-			int x = readH();
-			int y = readH();
-			
+			mapId = readH();
+			x = readH();
+			y = readH();
+
 			// Find bookmark by coordinates but store its INDEX, not its ID
 			L1BookMark bookmark = pc.getBookMarkByCoords(x, y, mapId);
 			if(bookmark != null) {
@@ -1211,11 +1214,14 @@ public class C_ItemUSe extends ClientBasePacket {
 				cancelAbsoluteBarrier(pc);
 			} else if (itemId == 140100 || itemId == 40086 || itemId == 40863) { //btele, mass tele scroll, lasta scroll
 		L1BookMark bookm = pc.getBookMarkByIndex(btele);
+		if (x == 0 && y == 0 && mapId ==0) {
+			bookm = null;
+		}
 		if (bookm != null) {
 			if (pc.getMap().isEscapable() || pc.isGm()) {
 				int newX = bookm.getLocX();
 				int newY = bookm.getLocY();
-				short mapId = bookm.getMapId();
+				short mapId1 = bookm.getMapId();
 	
 				if (itemId == 40086) {
 					for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc)) {
@@ -1223,11 +1229,11 @@ public class C_ItemUSe extends ClientBasePacket {
 								&& pc.getLocation().getTileLineDistance(member.getLocation()) <= 3
 								&& member.getClanid() == pc.getClanid() && pc.getClanid() != 0
 								&& member.getId() != pc.getId()) {
-							L1Teleport.teleport(member, newX, newY, mapId, 5, true);
+							L1Teleport.teleport(member, newX, newY, mapId1, 5, true);
 						}
 					}
 				}
-				L1Teleport.teleport(pc, newX, newY, mapId, 5, true);
+				L1Teleport.teleport(pc, newX, newY, mapId1, 5, true);
 				inventory.removeItem(l1iteminstance, 1);
 			} else {
 				pc.sendPackets(new S_ServerMessage(79)); // Nothing happened.
@@ -1239,7 +1245,7 @@ public class C_ItemUSe extends ClientBasePacket {
 				L1Location newLocation = pc.getLocation().randomLocation(200, true);
 				int newX = newLocation.getX();
 				int newY = newLocation.getY();
-				short mapId = (short) newLocation.getMapId();
+				short mapId1 = (short) newLocation.getMapId();
 	
 				if (itemId == 40086) {
 					for (L1PcInstance member : L1World.getInstance().getVisiblePlayer(pc)) {
@@ -1247,11 +1253,11 @@ public class C_ItemUSe extends ClientBasePacket {
 								&& pc.getLocation().getTileLineDistance(member.getLocation()) <= 3
 								&& member.getClanid() == pc.getClanid() && pc.getClanid() != 0
 								&& member.getId() != pc.getId()) {
-							L1Teleport.teleport(member, newX, newY, mapId, 5, true);
+							L1Teleport.teleport(member, newX, newY, mapId1, 5, true);
 						}
 					}
 				}
-				L1Teleport.teleport(pc, newX, newY, mapId, 5, true);
+				L1Teleport.teleport(pc, newX, newY, mapId1, 5, true);
 				inventory.removeItem(l1iteminstance, 1);
 			} else {
 				pc.sendPackets(new S_ServerMessage(276)); // You can't randomly teleport here.
@@ -2572,10 +2578,10 @@ public class C_ItemUSe extends ClientBasePacket {
 			} else {
 				int locX = ((L1EtcItem) l1iteminstance.getItem()).get_locx();
 				int locY = ((L1EtcItem) l1iteminstance.getItem()).get_locy();
-				short mapId = ((L1EtcItem) l1iteminstance.getItem()).get_mapid();
+				short mapId1 = ((L1EtcItem) l1iteminstance.getItem()).get_mapid();
 				if (locX != 0 && locY != 0) {
 					if (pc.getMap().isEscapable() || pc.isGm()) {
-						L1Teleport.teleport(pc, locX, locY, mapId, pc.getHeading(), true);
+						L1Teleport.teleport(pc, locX, locY, mapId1, pc.getHeading(), true);
 						inventory.removeItem(l1iteminstance, 1);
 					} else {
 						pc.sendPackets(new S_ServerMessage(647)); // You cannot teleport in this location.
