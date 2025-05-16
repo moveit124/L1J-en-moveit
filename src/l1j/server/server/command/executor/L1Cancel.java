@@ -47,8 +47,6 @@ import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.serverpackets.S_CharVisualUpdate;
-import l1j.server.server.serverpackets.S_HPUpdate;
-import l1j.server.server.serverpackets.S_MPUpdate;
 import l1j.server.server.serverpackets.S_SkillHaste;
 import l1j.server.server.serverpackets.S_SkillSound;
 import l1j.server.server.serverpackets.S_SystemMessage;
@@ -102,21 +100,7 @@ public class L1Cancel implements L1CommandExecutor {
 		for (int skillNum = SKILLS_BEGIN; skillNum <= SKILLS_END; skillNum++) {
 			// if it isn't a cancellable skill, we need to send the packet manually to the client
 			if(IntArrays.sContains(UNCANCELABLE, skillNum)) {
-				 if (skillNum == ADVANCE_SPIRIT) {
-						if (player instanceof L1PcInstance) {
-							player.addMaxHp(-player.getAdvenHp());
-							player.addMaxMp(-player.getAdvenMp());
-							player.setAdvenHp(0);
-							player.setAdvenMp(0);
-							player.sendPackets(new S_HPUpdate(player.getCurrentHp(), player.getMaxHp()));
-							if (player.isInParty()) {
-								player.getParty().updateMiniHP(player);
-							}
-							player.sendPackets(new S_MPUpdate(player.getCurrentMp(), player.getMaxMp()));
-						}
-					} else {
-						player.killSkillEffectTimer(skillNum);
-					}
+				player.killSkillEffectTimer(skillNum);
 			}
 
 			player.removeSkillEffect(skillNum);

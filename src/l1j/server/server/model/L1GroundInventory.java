@@ -32,9 +32,6 @@ public class L1GroundInventory extends L1Inventory {
     private static final Map<String, Integer> droppedItemCounts = new ConcurrentHashMap<>();
     private static final Set<String> activeSlimeKeys = ConcurrentHashMap.newKeySet();
     private static final int MAX_ITEMS_PER_LOCATION = 50;
-    private static final Map<Integer, Long> itemDeletedAt = new ConcurrentHashMap<>();
-    
-    private static final Map<String, L1MonsterInstance> slimeByGridKey = new ConcurrentHashMap<>();
 
     public L1GroundInventory(int objectId, int x, int y, short map) {
         setId(objectId);
@@ -102,12 +99,11 @@ public class L1GroundInventory extends L1Inventory {
         if (slimeNpc == null) return;
 
         L1MonsterInstance slime = new L1MonsterInstance(slimeNpc) {
-        	@Override
-        	public void deleteMe() {
-        	    super.deleteMe();
-        	    activeSlimeKeys.remove(slimeKey);
-        	    slimeByGridKey.remove(slimeKey); // ✅ clean up
-        	}
+            @Override
+            public void deleteMe() {
+                super.deleteMe();
+                activeSlimeKeys.remove(slimeKey);
+            }
         };
 
         L1Map map = L1WorldMap.getInstance().getMap((short) mapId);
@@ -139,7 +135,6 @@ public class L1GroundInventory extends L1Inventory {
         L1World.getInstance().storeObject(slime);
         L1World.getInstance().addVisibleObject(slime);
         activeSlimeKeys.add(slimeKey);
-        slimeByGridKey.put(slimeKey, slime);
     }
 
     @Override
@@ -161,15 +156,8 @@ public class L1GroundInventory extends L1Inventory {
             List<L1ItemInstance> list = mapGrids.get(gridKey);
             if (list != null) list.remove(item);
         }
-
-        // ✅ Ensure deletion is marked for slime cleanup
-        itemDropTimes.put(item.getId(), -1L);
-        itemDeletedAt.put(item.getId(), System.currentTimeMillis());
-
-        System.out.println("Slime system: item picked up or removed, scheduled slime kill for " + mapId + ":" + gridKey);
-        scheduleSlimeKill(item, mapId, gridKey);
+        itemDropTimes.remove(item.getId());
     }
-
 
     private boolean isSpawnedItem(L1ItemInstance item) {
         if (item.getItem().getItemId() == 40515) {
@@ -202,38 +190,6 @@ public class L1GroundInventory extends L1Inventory {
         _scheduler.scheduleAtFixedRate(() -> {
             long currentTime = System.currentTimeMillis();
 
-            // ✅ PASS 1: Handle item deletion and delayed slime kill
-            for (Map.Entry<Short, Map<String, List<L1ItemInstance>>> mapEntry : gridSpawnCandidates.entrySet()) {
-                short mapId = mapEntry.getKey();
-                Map<String, List<L1ItemInstance>> gridMap = mapEntry.getValue();
-
-                for (Map.Entry<String, List<L1ItemInstance>> gridEntry : gridMap.entrySet()) {
-                    String gridKey = gridEntry.getKey();
-                    List<L1ItemInstance> items = gridEntry.getValue();
-
-                    for (L1ItemInstance item : new ArrayList<>(items)) {
-                        long dropTime = itemDropTimes.getOrDefault(item.getId(), 0L);
-                        long age = currentTime - dropTime;
-
-                        // ❌ Skip protected items
-                        if (item.getItem().getItemId() == 40515) continue;
-                        if (L1HouseLocation.isInHouse(item.getX(), item.getY(), item.getMapId())) continue;
-
-                        // ✅ Delete item after 20 minutes
-                        if (dropTime > 0 && age >= (SLIME_SPAWN_TIME + (5 * 60 * 1000))) {
-                            L1Inventory inv = L1World.getInstance().getInventory(item.getX(), item.getY(), item.getMapId());
-                            if (inv != null) {
-                                inv.removeItem(item);
-                                itemDropTimes.put(item.getId(), -1L); // flag as deleted
-                                itemDeletedAt.put(item.getId(), currentTime); // ✅ store real deletion time
-                                System.out.println("Slime system: force deleted item after 2m: " + item.getName());
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ✅ PASS 2: Slime spawning (after 15 minutes)
             for (Map.Entry<Short, Map<String, List<L1ItemInstance>>> mapEntry : gridSpawnCandidates.entrySet()) {
                 short mapId = mapEntry.getKey();
                 Map<String, List<L1ItemInstance>> gridMap = mapEntry.getValue();
@@ -247,13 +203,9 @@ public class L1GroundInventory extends L1Inventory {
                     boolean shouldSpawn = false;
                     for (L1ItemInstance item : items) {
                         long dropTime = itemDropTimes.getOrDefault(item.getId(), 0L);
-                        long age = currentTime - dropTime;
-
-                        if (dropTime > 0 && age >= (SLIME_SPAWN_TIME)) {
-                            if (!L1HouseLocation.isInHouse(item.getX(), item.getY(), item.getMapId())) {
-                                shouldSpawn = true;
-                                break;
-                            }
+                        if (currentTime - dropTime >= SLIME_SPAWN_TIME) {
+                            shouldSpawn = true;
+                            break;
                         }
                     }
 
@@ -261,33 +213,14 @@ public class L1GroundInventory extends L1Inventory {
                         L1ItemInstance spawnSource = items.get(0);
                         spawnSlime(spawnSource.getX(), spawnSource.getY(), mapId, gridKey);
 
-                        // ✅ Removed dropTime reset to allow proper 2/3 minute timing
-                        // Do not reset timers here
+                        for (L1ItemInstance item : items) {
+                            itemDropTimes.put(item.getId(), System.currentTimeMillis()); // Reset timer
+                        }
                     }
                 }
             }
-
         }, 30, 30, TimeUnit.SECONDS);
     }
-    
-    private static void scheduleSlimeKill(L1ItemInstance item, int mapId, String gridKey) {
-        String slimeKey = mapId + ":" + gridKey;
 
-        _scheduler.schedule(() -> {
-            L1MonsterInstance slime = slimeByGridKey.get(slimeKey);
-
-            if (slime == null) {
-                System.out.println("Slime system: no slime found for key " + slimeKey);
-            } else if (slime.isDead()) {
-                System.out.println("Slime system: slime for key " + slimeKey + " is already dead");
-            } else {
-                slime.receiveDamage(null, 999999);
-                System.out.println("Slime system: killed slime via scheduled task for " + slimeKey);
-            }
-
-            activeSlimeKeys.remove(slimeKey);
-            slimeByGridKey.remove(slimeKey);
-        }, 300, TimeUnit.SECONDS);
-    }
-
+    private static Logger _log = LoggerFactory.getLogger(L1GroundInventory.class.getName());
 }
