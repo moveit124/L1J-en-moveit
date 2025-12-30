@@ -48,7 +48,7 @@ public class L1AddWarehouseInstance extends L1NpcInstance {
 		attack.addChaserAttack();
 		attack.addEvilAttack();
 		attack.calcDamage();
-		attack.calcStaffOfMana();
+		attack.calcStaffOfMana(this);
 		attack.addPcPoisonAttack(pc, this);
 		attack.commit();
 	}

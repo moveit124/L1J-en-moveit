@@ -61,8 +61,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import l1j.server.Config;
+import l1j.server.server.datatables.CharBuffTable;
 import l1j.server.server.datatables.LogReporterTable;
 import l1j.server.server.datatables.NpcSpawnTable;
+import l1j.server.server.model.L1Attribute;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1Teleport;
 import l1j.server.server.model.L1World;
@@ -74,6 +76,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.poison.L1ParalysisPoison;
 import l1j.server.server.model.skill.L1SkillId;
 import l1j.server.server.model.skill.L1SkillUse;
+import l1j.server.server.serverpackets.S_CharReset;
 import l1j.server.server.serverpackets.S_HPMeter;
 import l1j.server.server.serverpackets.S_SystemMessage;
 import l1j.server.server.templates.L1Npc;
@@ -155,7 +158,59 @@ public class PCommands {
 		try {
 			if (cmd2.equalsIgnoreCase("help")) {
 				showPHelp(player);
-			}else if (cmd2.startsWith("aura")) {
+			}else if (cmd2.startsWith("elixir")) {
+
+			    if (!player.isGm()) {
+			        player.sendPackets(new S_SystemMessage("Only GMs can use this command."));
+			        return;
+			    }
+			    String[] args = cmd2.split(" ");
+
+			    if (args.length == 2 && args[1].equalsIgnoreCase("clear")) {
+			        player.resetElixirAlloc();
+			        player.sendPackets(new S_SystemMessage("Elixir allocation reset."));
+			        return;
+			    }
+
+			    if (args.length != 3) {
+			        player.sendPackets(new S_SystemMessage("Usage: -elixir <str | int | dex | con | wis | cha> <amount> or -elixir clear"));
+			        return;
+			    }
+
+			    String attrStr = args[1].toLowerCase();
+			    int amount;
+			    try {
+			        amount = Integer.parseInt(args[2]);
+			    } catch (NumberFormatException e) {
+			        player.sendPackets(new S_SystemMessage("Invalid amount."));
+			        return;
+			    }
+
+			    L1Attribute attr;
+			    switch (attrStr) {
+			        case "str": attr = L1Attribute.Str; break;
+			        case "int": attr = L1Attribute.Int; break;
+			        case "wis": attr = L1Attribute.Wis; break;
+			        case "dex": attr = L1Attribute.Dex; break;
+			        case "con": attr = L1Attribute.Con; break;
+			        case "cha": attr = L1Attribute.Cha; break;
+			        default:
+			            player.sendPackets(new S_SystemMessage("Invalid attribute. Use str, int, wis, dex, con, or cha."));
+			            return;
+			    }
+
+			    int used = player.getTotalElixirAlloc();
+			    int max = player.getElixirStats();
+
+			    if (used + amount > max) {
+			        player.sendPackets(new S_SystemMessage("You only have " + (max - used) + " elixir point(s) left."));
+			        return;
+			    }
+
+			    int current = player.getElixirAlloc().getOrDefault(attr, 0);
+			    player.getElixirAlloc().put(attr, current + amount);
+			    player.sendPackets(new S_SystemMessage("Elixir assignment saved: " + (current + amount) + " to " + attrStr + "."));
+			}  else if (cmd2.startsWith("aura")) {
 			    if (!player.isGm()) {
 			        player.sendPackets(new S_SystemMessage("Only GMs can use this command."));
 			        return;
@@ -417,9 +472,10 @@ public class PCommands {
 		} else
 			player.sendPackets(DKHelp);
 	}
-	public void hpbar(L1PcInstance player, String arg) {
+	public static void hpbar(L1PcInstance player, String arg) {
 	    if (arg.equalsIgnoreCase("on")) {
-	        player.setSkillEffect(L1SkillId.PLAYERSTATUS_HPBAR, 0);
+	    	player.setSkillEffect(L1SkillId.PLAYERSTATUS_HPBAR, 1000 * 60 * 60 * 24 * 365); // 1 year
+	    	CharBuffTable.StoreBuff(player.getId(), L1SkillId.PLAYERSTATUS_HPBAR, Integer.MAX_VALUE, 0);
             player.sendPackets(new S_SystemMessage("HP Bar enabled."));
 
 	        // ✅ Show HP bars only for actively attacked targets
@@ -428,7 +484,7 @@ public class PCommands {
 	                L1MonsterInstance monster = (L1MonsterInstance) obj;
 
 	             // ✅ Only show HP bars for monsters recently attacked by the player
-	                if (monster.hasAttacked(player) && !monster.isBoss()) {  // ✅ Updated to check if the player is in the attacker list
+	                if (monster.hasAttacked(player) && !monster.isBoss() && monster.getCurrentHp() > 0) {  // ✅ Updated to check if the player is in the attacker list
 	                    player.sendPackets(new S_HPMeter(monster));
 	                }
 

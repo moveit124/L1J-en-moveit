@@ -82,32 +82,34 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 		}
 
 		boolean isEnoughMaterials = true;
-        for (L1ObjectAmount<Integer> material : _materials) {
+		for (L1ObjectAmount<Integer> material : _materials) {
 
-            List<L1ItemInstance> itemList = pc.getInventory().findItemsId(material.getObject());
+		    List<L1ItemInstance> itemList = pc.getInventory().findItemsId(material.getObject());
 
-            int count = 0;
-            for (L1ItemInstance x : itemList) {
-                if(x.isStackable()) {
-                    count = x.getCount();
-                    continue;
-                }
+		    int count = 0;
+		    for (L1ItemInstance x : itemList) {
+		        if (x.isEquipped() || x.getEnchantLevel() > 0) {
+		            continue; // Ignore equipped or enchanted items
+		        }
 
-                if(x.getEnchantLevel() == 0 && !pc.getInventory().checkEquipped(material.getObject()))
-                    count++;
-            }
+		        if (x.isStackable()) {
+		            count += x.getCount();
+		        } else {
+		            count++;
+		        }
+		    }
 
-            if (count < material.getAmount() * amount){
-                L1Item temp = ItemTable.getInstance().getTemplate(material.getObject());
+		    if (count < material.getAmount() * amount) {
+		        L1Item temp = ItemTable.getInstance().getTemplate(material.getObject());
 
-                pc.sendPackets(new S_ServerMessage(337, temp.getName()
-                        + "("
-                        + ((material.getAmount() * amount) - pc.getInventory()
-                        .countNonEnchantedItems(temp.getItemId())) + ")"));
-                isEnoughMaterials = false;
-            }
+		        pc.sendPackets(new S_ServerMessage(337, temp.getName()
+		                + "("
+		                + ((material.getAmount() * amount) - count) + ")"));
+		        isEnoughMaterials = false;
+		    }
 
-        }
+		}
+
 		if (!isEnoughMaterials) {
 			return false;
 		}
@@ -138,10 +140,26 @@ public class L1NpcMakeItemAction extends L1NpcXmlAction {
 		}
 
 		for (L1ObjectAmount<Integer> material : _materials) {
+			int neededCount = material.getAmount() * amount;
+			int removedCount = 0;
 
-			pc.getInventory().consumeItem(material.getObject(),
-					material.getAmount() * amount);
+			List<L1ItemInstance> itemList = pc.getInventory().findItemsId(material.getObject());
+
+			for (L1ItemInstance item : itemList) {
+				if (item.isEquipped() || item.getEnchantLevel() > 0) {
+					continue; // skip equipped or enchanted
+				}
+
+				int toRemove = Math.min(item.getCount(), neededCount - removedCount);
+				pc.getInventory().removeItem(item, toRemove);
+				removedCount += toRemove;
+
+				if (removedCount >= neededCount) {
+					break;
+				}
+			}
 		}
+
 
 		for (L1ObjectAmount<Integer> makingItem : _items) {
 			L1ItemInstance item = pc.getInventory().storeItem(

@@ -386,6 +386,8 @@ public class L1SkillId {
 
 	public static final int MIND_BREAK = 207;
 
+	public static final int ICE_ERUPTION = 10035; // アイスイラプション
+	
 	public static final int BONE_BREAK = 208;
 
 	public static final int ILLUSION_LICH = 209;

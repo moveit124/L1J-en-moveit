@@ -135,7 +135,35 @@ public class L1GroundInventory extends L1Inventory {
         L1World.getInstance().storeObject(slime);
         L1World.getInstance().addVisibleObject(slime);
         activeSlimeKeys.add(slimeKey);
+        
+        // 🔻 Schedule item deletion after 5 minutes
+        _scheduler.schedule(() -> {
+            Map<String, List<L1ItemInstance>> gridMap = gridSpawnCandidates.get((short) mapId);
+            if (gridMap != null) {
+                List<L1ItemInstance> gridItems = gridMap.get(gridKey);
+                if (gridItems != null) {
+                    for (L1ItemInstance item : new ArrayList<>(gridItems)) {
+                        // Must match the inventory at the ground location
+                        Collection<L1Object> objs = L1World.getInstance().getVisibleObjects(item, 0);
+                        for (L1Object obj : objs) {
+                            if (obj instanceof L1GroundInventory) {
+                                ((L1GroundInventory) obj).deleteItem(item);
+                                _log.info("Slime system: deleted item " + item.getName() + " after 5 minutes.");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }, 5, TimeUnit.MINUTES);
+
+        // 🔻 Schedule slime death after 10 minutes
+        _scheduler.schedule(() -> {
+            slime.receiveDamage(null, 999999);
+            _log.info("Slime system: killed slime after 10 minutes.");
+        }, 10, TimeUnit.MINUTES);
     }
+    
 
     @Override
     public void deleteItem(L1ItemInstance item) {

@@ -36,10 +36,12 @@ import l1j.server.server.datatables.PetTable;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
+import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
+import l1j.server.server.serverpackets.S_ItemName;
 import l1j.server.server.serverpackets.S_PetPack;
 import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SkillSound;
@@ -593,6 +595,12 @@ public class CalcExp {
 			petTemplate.set_hp(pet.getMaxHp());
 			petTemplate.set_mp(pet.getMaxMp());
 			PetTable.getInstance().storePet(petTemplate);
+			for (L1ItemInstance item : pc.getInventory().getItems()) {
+				if (item.getId() == pet.getItemObjId()) {
+					pc.sendPackets(new S_ItemName(item)); // Or use your actual packet for refreshing item display
+					break;
+				}
+			}
 			pc.sendPackets(new S_ServerMessage(320, pet.getName()));
 			// top off pet's HP/MP on level up
 			pet.setCurrentHp(pet.getMaxHp());

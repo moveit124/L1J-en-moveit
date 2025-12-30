@@ -426,6 +426,8 @@ public class L1PcInventory extends L1Inventory {
 		setEquipped(item, equipped, false, false);
 	}
 
+	private long _weaponSwapTime = System.currentTimeMillis();
+	
 	public void setEquipped(L1ItemInstance item, boolean equipped,
 			boolean loaded, boolean changeWeapon) {
 		if (item.isEquipped() != equipped) {
@@ -454,7 +456,16 @@ public class L1PcInventory extends L1Inventory {
 				_owner.setCurrentHp(_owner.getCurrentHp());
 				_owner.setCurrentMp(_owner.getCurrentMp());
 				updateItem(item, COL_EQUIPPED);
+				
 				_owner.sendPackets(new S_OwnCharStatus(_owner));
+				
+				//This code should stop "Weapon Zoomie" bug
+				if (System.currentTimeMillis() - _weaponSwapTime < 500 && changeWeapon == true) {
+					_owner.setLastWeaponSwapTime(System.currentTimeMillis());
+				}
+				
+				 _weaponSwapTime = System.currentTimeMillis();
+				
 				if (temp.getType2() == 1 && changeWeapon == false) {
 					_owner.sendPackets(new S_CharVisualUpdate(_owner));
 					_owner.broadcastPacket(new S_CharVisualUpdate(_owner));

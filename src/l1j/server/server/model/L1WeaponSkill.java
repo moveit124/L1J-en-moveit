@@ -38,6 +38,7 @@ import static l1j.server.server.model.skill.L1SkillId.STATUS_FREEZE;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import l1j.server.Config;
@@ -54,14 +55,19 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.skill.L1SkillUse;
 import l1j.server.server.serverpackets.S_DoActionGFX;
 import l1j.server.server.serverpackets.S_EffectLocation;
+import l1j.server.server.serverpackets.S_HPUpdate;
 import l1j.server.server.serverpackets.S_Paralysis;
 import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SkillSound;
 import l1j.server.server.serverpackets.S_UseAttackSkill;
 import l1j.server.server.serverpackets.ServerBasePacket;
 import l1j.server.server.templates.L1Skill;
+import static l1j.server.server.model.skill.L1SkillId.*;
+import l1j.server.server.random.RandomGenerator;
+import l1j.server.server.random.RandomGeneratorFactory;
 
 public class L1WeaponSkill {
+	private static RandomGenerator _random = RandomGeneratorFactory.newRandom();
 
  	private int _weaponId;
 	private int _probability;
@@ -71,16 +77,23 @@ public class L1WeaponSkill {
 	private int _skillId;
 	private int _skillTime;
 	private int _effectId;
+	private int adjustedProbability;
+	private int safeEnchant;
 	private int _effectTarget;
 	private boolean _isArrowType;
 	private int _attr;
 	private double _multiplier;
 
-	private static final int BaphoStaffChance = 14;
+	//private static final int BaphoStaffChance = 14;
 	private static final int DiceDaggerChance = 3;
-	private static final int LightningEdgeChance = 4;
-	private static final int FrozenSpearChance = 5;
-	private static final int WindAxeChance = 4;
+	//private static final int LightningEdgeChance = 4;
+	private static final int LanceOfAdenChance = 20;
+	//private static final int FrozenSpearChance = 5;
+	//private static final int WindAxeChance = 4;
+	
+	private static final Map<Integer, Integer> soaFireworkIndex = new ConcurrentHashMap<>();
+	private static final int[] soaFireworkIds = { 41375, 41371, 41357 }; // S, O, A
+
 	
 	private static final int FettersTime = 8000;
 	// Basically arbitrary, but default to casting procs like a level 48 mage.
@@ -150,8 +163,16 @@ public class L1WeaponSkill {
 		return _weaponId;
 	}
 
-	public int getProbability() {
-		return _probability;
+	public int getProbability(L1ItemInstance weapon) {
+		safeEnchant = weapon.getItem().get_safeenchant();
+		if (safeEnchant < 0) {
+			adjustedProbability = _probability;
+		} else if (safeEnchant == 0) {
+			adjustedProbability = _probability - 2 + weapon.getEnchantLevel();
+		} else {
+			adjustedProbability = _probability - 7 + weapon.getEnchantLevel();	
+		}
+		return adjustedProbability;
 	}
 
 	public int getFixDamage() {
@@ -201,18 +222,56 @@ public class L1WeaponSkill {
 
 		switch (weaponId) {
 		case 124:
-			return getBaphometStaffDamage(attacker, target);
+			return getBaphometStaffDamage(attacker, target, attacker.getWeapon());
 		case 204:
 		case 100204:
 			return giveFettersEffect(attacker, target);
 		case 264:
-			return getLightningEdgeDamage(attacker, target);
+			return getLightningEdgeDamage(attacker, target, attacker.getWeapon());
 		case 260:
-			return getWindAxeDamage(attacker, target);
+			return getRagingWindDamage(attacker, target);
 		case 263:
-			return getFrozenSpearDamage(attacker, target);
+			return getFreezingLancerDamage(attacker, target);
 		case 261:
-			return giveArkMageDiseaseEffect(attacker, target);
+			giveArkMageDiseaseEffect(attacker, target, attacker.getWeapon());
+		case 701:
+			return getIceWeaponDamage(attacker, target, attacker.getWeapon());
+		case 702:
+			return getIceWeaponDamage(attacker, target, attacker.getWeapon());
+		case 100010:
+			if (ThreadLocalRandom.current().nextInt(200) == 0) { // 0.5% chance
+				int baseX = attacker.getX();
+				int baseY = attacker.getY();
+
+				int[] gfxPool = {2047, 2048, 2040, 2028, 2036};
+
+				for (int i = 0; i < 21; i++) {
+					int offsetX = ThreadLocalRandom.current().nextInt(-10, 11);
+					int offsetY = ThreadLocalRandom.current().nextInt(-8, 9);
+					int gfx = gfxPool[ThreadLocalRandom.current().nextInt(gfxPool.length)];
+					int delay = i * 200;
+
+					final int fx = baseX + offsetX;
+					final int fy = baseY + offsetY;
+					final int fgfx = gfx;
+
+					// Schedule firework burst
+					GeneralThreadPool.getInstance().schedule(() -> {
+						attacker.sendPackets(new S_EffectLocation(fx, fy, fgfx));
+					}, delay);
+
+					// Schedule S O A every 5th burst (excluding 0)
+					if (i % 10 == 0) {
+						GeneralThreadPool.getInstance().schedule(() -> {
+							attacker.sendPackets(new S_EffectLocation(baseX - 4, baseY,     41375 - 34946)); // S
+							attacker.sendPackets(new S_EffectLocation(baseX - 2, baseY + 2, 41371 - 34946)); // O
+							attacker.sendPackets(new S_EffectLocation(baseX,     baseY + 4, 41357 - 34946)); // A
+						}, delay); // same delay so it syncs
+					}
+				}
+				return getLanceOfAdenRareDamage(attacker, target);
+			}
+			return getLanceOfAdenDamage(attacker, target);
 		case 550012: // shadow wind blade dagger
 		case WIND_BLADE_DAGGER: // fid dagger
 			int drainHp = ThreadLocalRandom.current().nextInt(8) + 5; // 5-12 damage
@@ -239,7 +298,7 @@ public class L1WeaponSkill {
 		if (weaponSkill == null)
 			return 0;
 
-		if (weaponSkill.getProbability() < ThreadLocalRandom.current().nextInt(100) + 1)
+		if (weaponSkill.getProbability(attacker.getWeapon()) < ThreadLocalRandom.current().nextInt(100) + 1)
 			return 0;
 
 		int skillId = weaponSkill.getSkillId();
@@ -313,11 +372,13 @@ public class L1WeaponSkill {
 		if (charaIntelligence < 1) {
 			charaIntelligence = 1;
 		}
-		double kiringkuCoefficientA = (1.0 + charaIntelligence * 3.0 / 32.0);
+		double kiringkuCoefficientA = (1.0 + charaIntelligence * 3 / 32.0);
 
-		damage = (int) (damage * kiringkuCoefficientA)
+		damage = (int) (damage * kiringkuCoefficientA )
 				+ weapon.getEnchantLevel() + attacker.getOriginalMagicDamage();
-
+		
+		damage = (int) (damage * 0.63);
+		
 		if (attacker.hasSkillEffect(ILLUSION_AVATAR)) {
 			damage += 10;
 		}
@@ -330,19 +391,66 @@ public class L1WeaponSkill {
 		return calcDamageReduction(attacker, target, damage, 0, true);
 	}
 
-	private static double getFrozenSpearDamage(final L1PcInstance attacker,
-			final L1Character target) {
-		return FrozenSpearChance >= ThreadLocalRandom.current().nextInt(100) + 1 ? handleAoeProc(
-				attacker, target, getWeaponDamage(attacker, 1.4),
-				Element.Water, new S_SkillSound(target.getId(), 1804), target,
-				3) : 0;
+	private static double getFreezingLancerDamage(final L1PcInstance attacker, final L1Character target) {
+		L1ItemInstance weapon = attacker.getWeapon();
+		int chance = weapon.getEnchantLevel() + 1;
+
+		if (ThreadLocalRandom.current().nextInt(100) < chance) {
+			return handleAoeProc(
+				attacker,
+				target,
+				getWeaponDamage(attacker, 1.4),
+				Element.Water,
+				new S_SkillSound(target.getId(), 1804),
+				target,
+				3
+			);
+		}
+
+		return 0;
 	}
 
-	private static double getWindAxeDamage(final L1PcInstance attacker,
-			final L1Character target) {
-		return WindAxeChance >= ThreadLocalRandom.current().nextInt(100) + 1 ? handleAoeProc(
-				attacker, target, getWeaponDamage(attacker, 1.5), Element.Wind,
-				new S_SkillSound(attacker.getId(), 758), attacker, 4) : 0;
+	
+	private static double getRagingWindDamage(final L1PcInstance attacker, final L1Character target) {
+		L1ItemInstance weapon = attacker.getWeapon();
+		int chance = weapon.getEnchantLevel() + 1;
+
+		if (ThreadLocalRandom.current().nextInt(100) < chance) {
+			return handleAoeProc(
+				attacker,
+				target,
+				getWeaponDamage(attacker, 1.5),
+				Element.Wind,
+				new S_SkillSound(attacker.getId(), 758),
+				attacker,
+				4
+			);
+		}
+
+		return 0;
+	}
+
+	
+	private static double getLanceOfAdenDamage(final L1PcInstance attacker, final L1Character target) {
+		if (LanceOfAdenChance >= ThreadLocalRandom.current().nextInt(100) + 1) {
+			int objId = attacker.getId();
+			int index = soaFireworkIndex.getOrDefault(objId, 0);
+
+			// Get correct firework ID (S → O → A)
+			int fireworkId = soaFireworkIds[index];
+			int soundId = fireworkId - 34946;
+
+			// Cycle to next letter
+			soaFireworkIndex.put(objId, (index + 1) % soaFireworkIds.length);
+
+			// Return single-target damage with firework visual
+			return handleProc(attacker, target, getWeaponDamage(attacker, .42), Element.Wind, new S_SkillSound(objId, soundId));
+		}
+		return 0;
+	}
+	
+	private static double getLanceOfAdenRareDamage(final L1PcInstance attacker, final L1Character target) {
+			return handleProc(attacker, target, getWeaponDamage(attacker, .84), Element.Wind, new S_SkillSound(attacker.getId(), 2047));
 	}
 
 	private static double handleAoeProc(final L1PcInstance attacker,
@@ -437,36 +545,68 @@ public class L1WeaponSkill {
 		return calcDamageReduction(attacker, target, damage, element);
 	}
 
-	private static double getBaphometStaffDamage(final L1PcInstance attacker,
-			final L1Character target) {
-		return BaphoStaffChance >= ThreadLocalRandom.current().nextInt(100) + 1 ? handleProc(
-				attacker, target, getWeaponDamage(attacker, 1.8),
-				Element.Earth,
-				new S_EffectLocation(target.getX(), target.getY(), 129)) : 0;
+	public static double getBaphometStaffDamage(L1PcInstance pc, L1Character cha, L1ItemInstance weapon) {
+		double dmg = 0;
+		int baseChance = 14;
+		int safeEnchant = weapon.getItem().get_safeenchant();
+		int enchant = weapon.getEnchantLevel();
+
+		int adjustedChance = baseChance;
+		if (enchant > safeEnchant) {
+		    adjustedChance += (enchant - safeEnchant); // +1% per level beyond safe
+		}
+
+		if (_random.nextInt(100) < adjustedChance) {
+			int locx = cha.getX();
+			int locy = cha.getY();
+			int sp = pc.getSp();
+			int intel = pc.getInt();
+			double bsk = 0;
+			if (pc.hasSkillEffect(BERSERKERS)) {
+				bsk = 0.2;
+			}
+			dmg = (intel + sp) * (1.8 + bsk) + _random.nextInt(intel + sp)
+					* 1.8;
+			S_EffectLocation packet = new S_EffectLocation(locx, locy, 129);
+			pc.sendPackets(packet);
+			pc.broadcastPacket(packet);
+		}
+		return calcDamageReduction(pc, cha, dmg, Element.Earth);
 	}
 
-	private static double getLightningEdgeDamage(final L1PcInstance attacker,
-			final L1Character target) {
-		return LightningEdgeChance >= ThreadLocalRandom.current().nextInt(100) + 1 ? handleProc(
-				attacker, target, getWeaponDamage(attacker, 2), Element.Wind,
-				new S_SkillSound(target.getId(), 10)) : 0;
+	public static double getLightningEdgeDamage(L1PcInstance pc, L1Character cha, L1ItemInstance weapon) {
+		// 2012リニューアル対応 ライトニングエッジ
+		double dmg = 0;
+		int chance = weapon.getEnchantLevel() + 1; // 発動確率は1+強化数%
+		int intel = pc.getInt();
+		int sp = pc.getSp();
+		if (_random.nextInt(100) + 1 <= chance) {
+			double bsk = 0;
+			if (pc.hasSkillEffect(BERSERKERS)) {
+				bsk = 0.2;
+			}
+			dmg = (intel + sp) * (2 + bsk) + _random.nextInt(intel + sp) * 2;
+
+			pc.sendPackets(new S_SkillSound(cha.getId(), 3940));
+			pc.broadcastPacket(new S_SkillSound(cha.getId(), 3940));
+		}
+	return calcDamageReduction(pc, cha, dmg, Element.Wind);
 	}
 
 	// TODO: see if we can pull up info from live - this will basically never
 	// trigger.
-	private static double giveArkMageDiseaseEffect(final L1PcInstance attacker,
-			final L1Character target) {
-		int probability = (5 - ((target.getMr() / 10) * 5)) * 10;
-		if (probability == 0) {
-			probability = 10;
+	public static void giveArkMageDiseaseEffect(L1PcInstance pc, L1Character cha, // 2012リニューアル対応
+			L1ItemInstance weapon) {
+		int chance = weapon.getEnchantLevel() + 1; // 発動確率は1+強化数%
+		if (_random.nextInt(100) + 1 <= chance) {
+			if (weapon.getItemId() == 261) { // エンジェルスタッフ（旧アークメイジスタッフ）
+				L1SkillUse l1skilluse = new L1SkillUse();
+				l1skilluse.handleCommands(pc,
+						TURN_UNDEAD, // ターンアンデッド
+						cha.getId(), cha.getX(), cha.getY(), null, 0,
+						L1SkillUse.TYPE_GMBUFF);
+			}
 		}
-		if (probability >= ThreadLocalRandom.current().nextInt(1000) + 1) {
-			L1SkillUse l1skilluse = new L1SkillUse();
-			l1skilluse.handleCommands(attacker, 56, target.getId(),
-					target.getX(), target.getY(), null, 0,
-					L1SkillUse.TYPE_GMBUFF);
-		}
-		return 0;
 	}
 
 	private static double giveFettersEffect(L1PcInstance pc, L1Character target) {
@@ -556,6 +696,60 @@ public class L1WeaponSkill {
 		return true;
 	}
 
+
+	public static double getIceWeaponDamage(L1PcInstance pc, L1Character cha,
+			L1ItemInstance weapon) {
+		int dmg = 0;
+		int chance = weapon.getEnchantLevel() + 1; // 発動確率は1+強化数%
+
+		if (_random.nextInt(100) + 1 <= chance) {
+			if (weapon.getItemId() == 701) { // 冷寒のキーリンク
+				L1Skill l1skills = SkillTable.getInstance().findBySkillId(
+						MIND_BREAK); // マインドブレイク
+				L1Magic magic = new L1Magic(pc, cha);
+
+				pc.sendPackets(new S_SkillSound(cha.getId(), l1skills
+						.getCastGfx()));
+				pc.broadcastPacket(new S_SkillSound(cha.getId(), l1skills
+						.getCastGfx()));
+
+				dmg = magic.calcMagicDamage(l1skills.getSkillId());
+
+				if (cha instanceof L1PcInstance) {
+					L1PcInstance targetPc = (L1PcInstance) cha;
+					targetPc.receiveDamage(pc, dmg, false);
+				} else if (cha instanceof L1NpcInstance) {
+					L1NpcInstance targetNpc = (L1NpcInstance) cha;
+					targetNpc.receiveDamage(pc, dmg);
+				}
+
+			}else if (weapon.getItemId() == 702) { // 극한의 체인소드 - Ice Eruption
+			    L1Skill l1skills = SkillTable.getInstance().findBySkillId(ICE_ERUPTION);
+
+			    // Calculate damage based on MR
+			    int mr = Math.min(cha.getMr(), 100); // cap MR at 100
+			    int effectiveMr = Math.max(mr, 30);  // floor MR at 30
+			    int finalDamage = 40 - ((effectiveMr - 30) * 15 / 70); // Scales 40 → 25
+
+			    // Visuals
+			    pc.sendPackets(new S_SkillSound(cha.getId(), l1skills.getCastGfx()));
+			    pc.broadcastPacket(new S_SkillSound(cha.getId(), l1skills.getCastGfx()));
+
+			    // Apply damage
+			    if (cha instanceof L1PcInstance) {
+			        ((L1PcInstance) cha).receiveDamage(pc, finalDamage, false);
+			    } else if (cha instanceof L1NpcInstance) {
+			        ((L1NpcInstance) cha).receiveDamage(pc, finalDamage);
+			    }
+
+			    // Heal attacker
+			    pc.setCurrentHp(pc.getCurrentHp() + finalDamage);
+			    pc.sendPackets(new S_HPUpdate(pc.getCurrentHp(), pc.getMaxHp()));
+			}
+		}
+		return   calcDamageReduction(pc, cha, dmg, Element.Water);
+	}
+	
 	private static boolean isImmune(L1Character character) {
 		if (L1Attack.isImmune(character)
 				|| character.hasSkillEffect(STATUS_FREEZE)) {

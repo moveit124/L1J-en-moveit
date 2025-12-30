@@ -74,7 +74,9 @@ import java.lang.reflect.Constructor;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.WeakHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -83,6 +85,7 @@ import org.slf4j.LoggerFactory;
 import l1j.server.Config;
 import l1j.server.server.Account;
 import l1j.server.server.ActionCodes;
+import l1j.server.server.GeneralThreadPool;
 import l1j.server.server.controllers.FishingTimeController;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.datatables.FurnitureSpawnTable;
@@ -167,6 +170,7 @@ import l1j.server.server.utils.collections.IntArrays;
 public class C_ItemUSe extends ClientBasePacket {
 	private static final String C_ITEM_USE = "[C] C_ItemUSe";
 	private static Logger _log = LoggerFactory.getLogger(C_ItemUSe.class.getName());
+	private static final Map<L1PcInstance, Long> dogFruitCooldown = new WeakHashMap<>();
 
 	public C_ItemUSe(byte abyte0[], Client client) throws Exception {
 		super(abyte0);
@@ -1132,6 +1136,11 @@ public class C_ItemUSe extends ClientBasePacket {
 					int[] loc = Getback.GetBack_Location(pc, true);
 					L1Teleport.teleport(pc, loc[0], loc[1], (short) loc[2], 5, true);
 					inventory.removeItem(l1iteminstance, 1);
+					
+					if (pc.getBotTracker() != null) {
+					    pc.recordEscapeUsage();
+					}
+
 				} else {
 					pc.sendPackets(new S_ServerMessage(647)); // You cannot teleport in this location.
 					// pc.sendPackets(new
@@ -1201,7 +1210,22 @@ public class C_ItemUSe extends ClientBasePacket {
 						}
 					} else {
 						// Regular random teleport
-						L1Location newLocation = pc.getLocation().randomLocation(200, true);
+						L1Location newLocation = null;
+						int maxRetries = 20;
+
+						for (int i = 0; i < maxRetries; i++) {
+							newLocation = pc.getLocation().randomLocation(200, true);
+
+							if (newLocation != null &&
+								(newLocation.getX() != pc.getX() || newLocation.getY() != pc.getY() || newLocation.getMapId() != pc.getMapId())) {
+								break; // found a new, valid spot
+							}
+						}
+
+						if (newLocation == null) {
+							newLocation = pc.getLocation(); // fallback to current position
+						}
+
 						L1Teleport.teleport(pc, newLocation.getX(), newLocation.getY(), (short) newLocation.getMapId(), 5, true);
 					}
 					inventory.removeItem(l1iteminstance, 1);
@@ -1519,9 +1543,9 @@ public class C_ItemUSe extends ClientBasePacket {
 					pc.sendPackets(new S_ServerMessage(79)); // Nothing happened.
 					return;
 				}
-
-				pc.sendPackets(
-						new S_UseAttackSkill(pc, spellsc_objid, 10, spellsc_x, spellsc_y, ActionCodes.ACTION_Wand));
+				//Commenting this out fixes "zoomies" speed bug when using call of lightning wand/maple etc
+				//pc.sendPackets(
+				//		new S_UseAttackSkill(pc, spellsc_objid, 10, spellsc_x, spellsc_y, ActionCodes.ACTION_Wand));
 				pc.broadcastPacket(
 						new S_UseAttackSkill(pc, spellsc_objid, 10, spellsc_x, spellsc_y, ActionCodes.ACTION_Wand));
 				if (target != null) {
@@ -1610,12 +1634,46 @@ public class C_ItemUSe extends ClientBasePacket {
 				}
 				pc.sendPackets(new S_ServerMessage(76, l1iteminstance.getItem().getIdentifiedNameId())); // You ate
 																											// 'item'.
-			} else if (itemId == 40070) {
-				pc.sendPackets(new S_ServerMessage(76, l1iteminstance.getLogName())); // You ate 'item'.
-				inventory.removeItem(l1iteminstance, 1);
-			} else if (itemId == 41310) { // added for gold dragon
-				pc.sendPackets(new S_ServerMessage(76, l1iteminstance.getLogName())); // You ate 'item'.
-				inventory.removeItem(l1iteminstance, 1);
+			} else if (itemId == 40070) { // Fruit of Evolution
+				long now = System.currentTimeMillis();
+				if (dogFruitCooldown.containsKey(pc) && now - dogFruitCooldown.get(pc) < 60000) {
+					pc.sendPackets(new S_SystemMessage("I really didn't like what happened last time."));
+					return;
+				}
+				dogFruitCooldown.put(pc, now);
+
+				pc.sendPackets(new S_SystemMessage("Mmmm... rabbit food.  *perk* *perk*"));
+				L1PolyMorph.doPoly(pc, 3783, 15, L1PolyMorph.MORPH_BY_ITEMMAGIC);
+
+				new Thread(() -> {
+					try {
+						Thread.sleep(15000);
+						pc.sendPackets(new S_SystemMessage("Whoa... I probably shouldn't eat that again."));
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}).start();
+			}
+
+			else if (itemId == 41310) { // Fruit of the Victor
+				long now = System.currentTimeMillis();
+				if (dogFruitCooldown.containsKey(pc) && now - dogFruitCooldown.get(pc) < 60000) {
+					pc.sendPackets(new S_SystemMessage("I really didn't like what happened last time."));
+					return;
+				}
+				dogFruitCooldown.put(pc, now);
+
+				pc.sendPackets(new S_SystemMessage("Mmmm... dog food.  Woof Woof."));
+				L1PolyMorph.doPoly(pc, 938, 15, L1PolyMorph.MORPH_BY_ITEMMAGIC);
+
+				new Thread(() -> {
+					try {
+						Thread.sleep(15000);
+						pc.sendPackets(new S_SystemMessage("Whoa... I probably shouldn't eat that again."));
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}).start();
 			} else if (itemId == 41298) {
 				UseHealingPotion(pc, 4, 189);
 				inventory.removeItem(l1iteminstance, 1);
@@ -2724,6 +2782,10 @@ public class C_ItemUSe extends ClientBasePacket {
 		if (!potionCheck(pc))
 			return;
 
+		if (pc.getBotTracker() != null) {
+		    pc.recordPotionUsage(); // clean and safe
+		}
+		
 		pc.sendAndBroadcast(new S_SkillSound(pc.getId(), gfxid));
 		if (pc.getPotionMessages())
 			pc.sendPackets(new S_ServerMessage(77)); // You feel better.

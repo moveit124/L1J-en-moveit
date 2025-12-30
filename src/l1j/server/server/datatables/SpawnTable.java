@@ -89,6 +89,13 @@ public class SpawnTable {
 						continue;
 					}
 				}
+
+				if (Config.BKLM_EVENT == false ) {
+					int npcid = rs.getInt("npc_templateid");
+					if (npcid == 101007 || npcid == 101008) {
+						continue;
+					}
+				}
 				int npcTemplateId = rs.getInt("npc_templateid");
 				short mapId = rs.getShort("mapid");
 				boolean isErr = false;

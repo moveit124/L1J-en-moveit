@@ -176,6 +176,7 @@ public class C_CharReset extends ClientBasePacket {
 			pc.sendPackets(new S_CharReset(pc, 1, hp, mp, 10, str, intel, wis,
 					dex, con, cha));
 			initCharStatus(pc, hp, mp, str, intel, wis, dex, con, cha);
+
 			pc.refresh();
 		} else if (stage == 0x02) { // 0x02:Xe[^Xz
 			// Stage 2: Level ups and adding stats 1 by 1
@@ -185,10 +186,61 @@ public class C_CharReset extends ClientBasePacket {
 					return;
 				
 				setLevelUp(pc, 1);
+				
+				
+				//-elixir change if we want it for later
+			    if (pc.isGm()) {
+					if (pc.getTempLevel() == 5) {
+					    // Apply elixirs at level 5
+					    for (Map.Entry<L1Attribute, Integer> entry : pc.getElixirAlloc().entrySet()) {
+					        for (int i = 0; i < entry.getValue(); i++) {
+					            switch (entry.getKey()) {
+					                case Str: pc.addBaseStr((byte) 1); break;
+					                case Int: pc.addBaseInt((byte) 1); break;
+					                case Wis: pc.addBaseWis((byte) 1); break;
+					                case Dex: pc.addBaseDex((byte) 1); break;
+					                case Con: pc.addBaseCon((byte) 1); break;
+					                case Cha: pc.addBaseCha((byte) 1); break;
+					            }
+					        }
+					    }
+					}
+			    }
 			} else if (type2 == 0x07) { // 0x07:Lv10UP
 				if (pc.getTempMaxLevel() - pc.getTempLevel() < 10)
 					return;
-				setLevelUp(pc, 10);
+
+				    if (pc.isGm()) {
+					int levelsToAdd = 10;
+	
+	
+					// Check if we'll pass level 5
+					if (pc.getTempLevel() < 5 && pc.getTempLevel() + levelsToAdd >= 5) {
+					    int toFive = 5 - pc.getTempLevel(); // How many levels to hit 5
+					    setLevelUp(pc, toFive);             // Step up to 5
+	
+					    // Apply elixirs at exactly level 5
+					    for (Map.Entry<L1Attribute, Integer> entry : pc.getElixirAlloc().entrySet()) {
+					        for (int i = 0; i < entry.getValue(); i++) {
+					            switch (entry.getKey()) {
+					                case Str: pc.addBaseStr((byte) 1); break;
+					                case Int: pc.addBaseInt((byte) 1); break;
+					                case Wis: pc.addBaseWis((byte) 1); break;
+					                case Dex: pc.addBaseDex((byte) 1); break;
+					                case Con: pc.addBaseCon((byte) 1); break;
+					                case Cha: pc.addBaseCha((byte) 1); break;
+					            }
+					        }
+					    }
+	
+					    setLevelUp(pc, levelsToAdd - toFive); // Finish remaining levels
+					} else {
+						setLevelUp(pc, 10);
+					}
+				} else {
+				    setLevelUp(pc, 10);
+				}
+
 			}   else {
 				int fullStats = pc.getBaseStr() + pc.getBaseInt() + pc.getBaseWis() + pc.getBaseDex() + pc.getBaseCon() + pc.getBaseCha();
 				int originalStats = pc.getOriginalStr() + pc.getOriginalInt() + pc.getOriginalWis() + pc.getOriginalDex() + pc.getOriginalCon() + pc.getOriginalCha();
@@ -245,12 +297,12 @@ public class C_CharReset extends ClientBasePacket {
 						pc.addBaseCha((byte) 1);
 						break;
 					}
-					
-					if (pc.getElixirStats() > 0) {	
-						pc.sendPackets(new S_CharReset(pc.getElixirStats()));
-						return;
+					if (!pc.isGm()) {
+						if (pc.getElixirStats() > 0) {	
+							pc.sendPackets(new S_CharReset(pc.getElixirStats()));
+							return;
+						}
 					}
-					
 					saveNewCharStatus(pc, client);
 				}
 			}

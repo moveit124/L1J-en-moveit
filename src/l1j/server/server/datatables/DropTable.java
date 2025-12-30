@@ -23,10 +23,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
@@ -35,10 +38,12 @@ import org.slf4j.LoggerFactory;
 import l1j.server.Config;
 import l1j.server.L1DatabaseFactory;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.L1FourthOfJulyEvent;
 import l1j.server.server.model.L1Inventory;
 import l1j.server.server.model.L1Quest;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1PetInstance;
@@ -46,6 +51,7 @@ import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.classes.L1ClassId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.serverpackets.S_ServerMessage;
+import l1j.server.server.serverpackets.S_SystemMessage;
 import l1j.server.server.templates.L1Drop;
 import l1j.server.server.utils.SQLUtil;
 
@@ -55,6 +61,42 @@ public class DropTable {
 	private static Logger _log = LoggerFactory.getLogger(DropTable.class.getName());
 	private static DropTable _instance;
 	private final HashMap<Integer, ArrayList<L1Drop>> _droplists;
+	
+	// Mobids that should bypass adjustChance algorithm
+	private static final Set<Integer> ADJUST_CHANCE_EXCEPTIONS = new HashSet<>();
+	
+	static {
+		// Load all boss npc_ids from spawnlist_boss table
+		loadBossExceptions();
+		
+		// Add additional mobids that should use simple rate multiplication instead of adjustChance
+		// Example: ADJUST_CHANCE_EXCEPTIONS.add(45001); // Some specific mob
+		// TODO: Add mobids as needed
+	}
+	
+	private static void loadBossExceptions() {
+		Connection con = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		try {
+			con = L1DatabaseFactory.getInstance().getConnection();
+			pstm = con.prepareStatement("SELECT DISTINCT npc_id FROM spawnlist_boss");
+			rs = pstm.executeQuery();
+			int count = 0;
+			while (rs.next()) {
+				int npcId = rs.getInt("npc_id");
+				ADJUST_CHANCE_EXCEPTIONS.add(npcId);
+				count++;
+			}
+			_log.info("Loaded {} boss npc_ids as adjustChance exceptions", count);
+		} catch (SQLException e) {
+			_log.error("Failed to load boss exceptions: " + e.getLocalizedMessage(), e);
+		} finally {
+			SQLUtil.close(rs);
+			SQLUtil.close(pstm);
+			SQLUtil.close(con);
+		}
+	}
 
 	public static DropTable getInstance() {
 		if (_instance == null) {
@@ -105,8 +147,12 @@ public class DropTable {
                 int max = rs.getInt("max");
                 int chance = rs.getInt("chance");
 
-                // Adjust the chance immediately
-                chance = (int) adjustChance(chance, Config.RATE_DROP_ITEMS);
+                // Apply adjustChance only if mobId is not in exceptions
+                if (!ADJUST_CHANCE_EXCEPTIONS.contains(mobId)) {
+                    chance = (int) adjustChance(chance, Config.RATE_DROP_ITEMS);
+                }
+                // If mobId is in exceptions, chance remains original value
+                // and will be affected by normal rate multipliers at runtime
 
                 L1Drop drop = new L1Drop(mobId, itemId, min, max, chance);
                 droplistMap.computeIfAbsent(mobId, k -> new ArrayList<>()).add(drop);
@@ -118,6 +164,7 @@ public class DropTable {
     }
 
     public static double adjustChance(double originalChance, double multiplier) {
+													   
         double normalizedChance = originalChance / 1000000.0;
 
         if (normalizedChance >= 0.5) { // Common items
@@ -129,6 +176,33 @@ public class DropTable {
         return originalChance; // Rare items (<= 0.2%) - Keep original chance
     }
 
+    public void dropToGround(L1MonsterInstance mob) {
+        try {
+            int npcId = mob.getNpcTemplate().get_npcId();
+            if (npcId == 45640 && mob.getTempCharGfx() != 2332) return;
+
+            List<L1Drop> dropList = getDrops(npcId);
+            if (dropList == null) return;
+
+            L1Inventory groundInv = L1World.getInstance().getInventory(
+                mob.getX(), mob.getY(), mob.getMapId());
+
+            for (L1Drop drop : dropList) {
+                if (ThreadLocalRandom.current().nextInt(1000000) < drop.getChance()) {
+                    int count = drop.getMin() + ThreadLocalRandom.current().nextInt(drop.getMax() - drop.getMin() + 1);
+                    if (count <= 0) continue;
+
+                    L1ItemInstance item = ItemTable.getInstance().createItem(drop.getItemid());
+                    item.setCount(count);
+                    item.setIdentified(true);
+                    groundInv.storeItem(item);
+                }
+            }
+        } catch (Exception e) {
+            _log.error("dropToGround failed for mob " + mob.getNpcId(), e);
+        }
+    }
+    
 	public void setDrop(L1NpcInstance npc, L1Inventory inventory) {
 		int mobId = npc.getNpcTemplate().get_npcId();
 		ArrayList<L1Drop> dropList = _droplists.get(mobId);
@@ -283,54 +357,90 @@ public class DropTable {
 								break;
 							}
 						}
-						if (acquisitor.getInventory().checkAddItem(item,
-								item.getCount()) == L1Inventory.OK) {
-							targetInventory = acquisitor.getInventory();
-							if (acquisitor instanceof L1PcInstance) {
-								player = (L1PcInstance) acquisitor;
-								// added to exclude quest drops from invalid
-								// classes
-								if (_questDrops.containsKey(item.getItemId())) {
-									if (!L1ClassId.classCode(player).equals(
-											_questDrops.get(item.getItemId()))) {
-										inventory.deleteItem(item);
-										break;
-									}
-								}
-								L1ItemInstance l1iteminstance = player
-										.getInventory().findItemId(
-												L1ItemId.ADENA);
-								if (l1iteminstance != null
-										&& l1iteminstance.getCount() > 2000000000) {
-									targetInventory = L1World.getInstance()
-											.getInventory(acquisitor.getX(),
-													acquisitor.getY(),
-													acquisitor.getMapId());
-									isGround = true;
-									player.sendPackets(new S_ServerMessage(166,
-											"The limit of the itemcount is 2000000000"));
-								} else {
-									if (player.isInParty()) {
-										partyMember = player.getParty()
-												.getMembers();
-										for (int p = 0; p < partyMember.length; p++) {
-											if (partyMember[p]
-													.getPartyDropMessages())
-												partyMember[p]
-														.sendPackets(new S_ServerMessage(
-																813,
-																npc.getName(),
-																item.getLogName(),
-																player.getName()));
-										}
-									} else {
-										if (player.getDropMessages())
-											player.sendPackets(new S_ServerMessage(
-													143, npc.getName(), item
-															.getLogName()));
-									}
-								}
-							}
+						L1PcInstance owner = null;
+						int npcId = npc.getNpcTemplate().get_npcId();
+
+						if (acquisitor instanceof L1PcInstance) {
+						    owner = (L1PcInstance) acquisitor;
+						} else if (acquisitor instanceof L1PetInstance || acquisitor instanceof L1SummonInstance) {
+						    L1NpcInstance petOrSummon = (L1NpcInstance) acquisitor;
+						    if (petOrSummon.getMaster() instanceof L1PcInstance) {
+						        owner = (L1PcInstance) petOrSummon.getMaster();
+						    }
+						}
+
+						if (owner != null) {
+						    // 🎯 Kill count tracking (if pet/summon kills should count)
+						    if (itemId == L1ItemId.ADENA) {
+						        if (npcId == 101008) {
+						            L1FourthOfJulyEvent.addEventKillCountMage();
+						        }
+						        if (npcId == 101007) {
+						            L1FourthOfJulyEvent.addEventKillCountOther();
+						        }
+						    }
+
+						    // 📢 Rare item announcement
+						    if ((npcId == 101007 || npcId == 101008)
+						        && getChance(npcId, item.getItemId()) < 500
+						        && !item.isGivenToNpc()) {
+
+						        String itemName = item.getItem().getName();
+						        String monsterName = npc.getName();
+						        String msg = "A player has received a rare item: " + itemName + " from " + monsterName + "! Happy 4th of July!";
+						        for (L1PcInstance onlinePlayer : L1World.getInstance().getAllPlayers()) {
+						            onlinePlayer.sendPackets(new S_SystemMessage(msg));
+						        }
+						    }
+
+						 // List of rare item IDs
+						    Set<Integer> rareItemIds = Set.of(
+						        84, 108, 110, 111, 117, 124, 163, 164, 20017, 20018, 20022, 20025, 20029, 20040, 20049, 20050,
+						        20057, 20074, 20077, 20116, 20169, 20200, 20202, 20204, 20218, 20253, 20255, 20279, 20314, 20317,
+						        21093, 21094, 21095, 40219, 40222, 40223, 40224, 40393, 40394, 40395, 40396, 41148, 41149, 54, 58
+						    );
+
+						    // Rare drop announcement for any monster
+						    if (rareItemIds.contains(item.getItemId()) && !item.isGivenToNpc()) {
+						        String itemName = item.getItem().getName();
+						        String monsterName = npc.getName();
+						        String msg = "A player has received a rare item: " + itemName + " from " + monsterName + "!";
+						        for (L1PcInstance onlinePlayer : L1World.getInstance().getAllPlayers()) {
+						            onlinePlayer.sendPackets(new S_SystemMessage(msg));
+						        }
+						    }
+						    
+						    // ✅ Class check for quest items
+						    if (_questDrops.containsKey(item.getItemId())) {
+						        if (!L1ClassId.classCode(owner).equals(_questDrops.get(item.getItemId()))) {
+						            inventory.deleteItem(item);
+						            break;
+						        }
+						    }
+
+						    // 💰 Adena overflow protection
+						    L1ItemInstance adena = owner.getInventory().findItemId(L1ItemId.ADENA);
+						    if (adena != null && adena.getCount() > 2000000000) {
+						        targetInventory = L1World.getInstance().getInventory(acquisitor.getX(), acquisitor.getY(), acquisitor.getMapId());
+						        isGround = true;
+						        owner.sendPackets(new S_ServerMessage(166, "The limit of the itemcount is 2000000000"));
+						    } else {
+						        if (owner.isInParty()) {
+						            for (L1PcInstance member : owner.getParty().getMembers()) {
+						                if (member.getPartyDropMessages()) {
+						                    member.sendPackets(new S_ServerMessage(813, npc.getName(), item.getLogName(), owner.getName()));
+						                }
+						            }
+						        } else {
+						            if (owner.getDropMessages()) {
+						                owner.sendPackets(new S_ServerMessage(143, npc.getName(), item.getLogName()));
+						            }
+						        }
+						    }
+
+						    if (!isGround && owner != null && targetInventory == null) {
+						        targetInventory = owner.getInventory(); // ✅ this is what you're missing
+						    }
 						} else {
 							targetInventory = L1World.getInstance()
 									.getInventory(acquisitor.getX(),
@@ -413,4 +523,20 @@ public class DropTable {
 	public List<L1Drop> getDrops(int mobID) {// New for GMCommands
 		return _droplists.get(mobID);
 	}
+	
+	public int getChance(int mobId, int itemId) {
+	    ArrayList<L1Drop> drops = _droplists.get(mobId);
+	    if (drops == null) {
+	        return -1; // Mob not found
+	    }
+
+	    for (L1Drop drop : drops) {
+	        if (drop.getItemid() == itemId) {
+	            return drop.getChance(); // Found exact match
+	        }
+	    }
+
+	    return -1; // Item not found for this mob
+	}
+
 }

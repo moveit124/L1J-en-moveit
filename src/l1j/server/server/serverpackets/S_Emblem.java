@@ -30,6 +30,7 @@ import l1j.server.server.encryptions.Opcodes;
 // ServerBasePacket
 public class S_Emblem extends ServerBasePacket {
 	private static final String S_EMBLEM = "[S] S_Emblem";
+	private byte[] _byte = null;
 
 	public S_Emblem(int clanid) {
 		BufferedInputStream bis = null;
@@ -46,9 +47,11 @@ public class S_Emblem extends ServerBasePacket {
 				}
 				writeC(0x00);
 				writeH(0x0000);
+			} else {
+				_byte = null; // Mark as invalid if emblem file doesn't exist
 			}
 		} catch (Exception e) {
-					   
+			_byte = null; // Mark as invalid on read error
 		} finally {
 			if (bis != null) {
 				try {
@@ -62,8 +65,12 @@ public class S_Emblem extends ServerBasePacket {
 
 	@Override
 	public byte[] getContent() {
-		return getBytes();
+		if (_byte == null) {
+			_byte = getBytes();
+		}
+		return _byte != null ? _byte : new byte[0];
 	}
+
 
 	@Override
 	public String getType() {

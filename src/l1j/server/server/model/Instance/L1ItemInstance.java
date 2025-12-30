@@ -78,6 +78,16 @@ public class L1ItemInstance extends L1Object implements Comparable<L1ItemInstanc
 
 	private int _keyId = 0;
 
+	private boolean _givenToNpc = false;
+
+	public void setGivenToNpc(boolean value) {
+	    _givenToNpc = value;
+	}
+
+	public boolean isGivenToNpc() {
+	    return _givenToNpc;
+	}
+	
 	public int getKeyId() {
 		return _keyId;
 	}
@@ -594,45 +604,60 @@ public class L1ItemInstance extends L1Object implements Comparable<L1ItemInstanc
 				if (attrEnchantLevel > 0) {
 					String attrStr = null;
 					switch (getAttrEnchantKind()) {
-					case Element.Earth:
-						if (attrEnchantLevel == 1) {
-							attrStr = "$6124";
-						} else if (attrEnchantLevel == 2) {
-							attrStr = "$6125";
-						} else if (attrEnchantLevel == 3) {
-							attrStr = "$6126";
-						}
-						break;
-					case Element.Fire:
-						if (attrEnchantLevel == 1) {
-							attrStr = "$6115";
-						} else if (attrEnchantLevel == 2) {
-							attrStr = "$6116";
-						} else if (attrEnchantLevel == 3) {
-							attrStr = "$6117";
-						}
-						break;
-					case Element.Water:
-						if (attrEnchantLevel == 1) {
-							attrStr = "$6118";
-						} else if (attrEnchantLevel == 2) {
-							attrStr = "$6119";
-						} else if (attrEnchantLevel == 3) {
-							attrStr = "$6120";
-						}
-						break;
-					case Element.Wind:
-						if (attrEnchantLevel == 1) {
-							attrStr = "$6121";
-						} else if (attrEnchantLevel == 2) {
-							attrStr = "$6122";
-						} else if (attrEnchantLevel == 3) {
-							attrStr = "$6123";
-						}
-						break;
-					default:
-						break;
-					}
+				    case Element.Earth:
+				        if (attrEnchantLevel == 1) {
+				            attrStr = "$6124 "; // Clay
+				        } else if (attrEnchantLevel == 2) {
+				            attrStr = "$6125 "; // Tera
+				        } else if (attrEnchantLevel == 3) {
+				            attrStr = "$6126 "; // Gaia
+				        } else if (attrEnchantLevel == 4) {
+				            attrStr = "Petra ";
+				        } else if (attrEnchantLevel == 5) {
+				            attrStr = "Titan ";
+				        }
+				        break;
+				    case Element.Fire:
+				        if (attrEnchantLevel == 1) {
+				            attrStr = "$6115 "; // Burning
+				        } else if (attrEnchantLevel == 2) {
+				            attrStr = "$6116 "; // Blazing
+				        } else if (attrEnchantLevel == 3) {
+				            attrStr = "$6117 "; // Scorching
+				        } else if (attrEnchantLevel == 4) {
+				            attrStr = "Smoldering ";
+				        } else if (attrEnchantLevel == 5) {
+				            attrStr = "Infernal ";
+				        }
+				        break;
+				    case Element.Water:
+				        if (attrEnchantLevel == 1) {
+				            attrStr = "$6118 "; // Soaking
+				        } else if (attrEnchantLevel == 2) {
+				            attrStr = "$6119 "; // Aqueous
+				        } else if (attrEnchantLevel == 3) {
+				            attrStr = "$6120 "; // Tidal
+				        } else if (attrEnchantLevel == 4) {
+				            attrStr = "Surging ";
+				        } else if (attrEnchantLevel == 5) {
+				            attrStr = "Abyssal ";
+				        }
+				        break;
+				    case Element.Wind:
+				        if (attrEnchantLevel == 1) {
+				            attrStr = "$6121 "; // Windy
+				        } else if (attrEnchantLevel == 2) {
+				            attrStr = "$6122 "; // Storming
+				        } else if (attrEnchantLevel == 3) {
+				            attrStr = "$6123 "; // Cyclone
+				        } else if (attrEnchantLevel == 4) {
+				            attrStr = "Tempest ";
+				        } else if (attrEnchantLevel == 5) {
+				            attrStr = "Maelstrom ";
+				        }
+				        break;
+				}
+
 					name.append(attrStr);
 				}
 			}

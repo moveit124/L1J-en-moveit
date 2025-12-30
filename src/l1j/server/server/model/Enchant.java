@@ -82,10 +82,19 @@ public class Enchant {
 		int currentLevel = weapon.getAttrEnchantLevel();
 
 		if (sameElement && currentLevel >= Config.ELEMENTAL_ENCHANT_LIMIT) {
-			player.sendPackets(new S_ServerMessage(1453));
+			player.sendPackets(new S_SystemMessage("The limit for attribute enchant on this server is " + Config.ELEMENTAL_ENCHANT_LIMIT + "."));
 			return;
 		}
-
+		// Custom restriction: require +10/+11 weapon for +4/+5 attribute
+		if (sameElement && currentLevel == 3 && weapon.getEnchantLevel() < 10) {
+		    player.sendPackets(new S_SystemMessage("Weapon must be +10 to apply +4 attribute enchant."));
+		    return;
+		}
+		if (sameElement && currentLevel == 4 && weapon.getEnchantLevel() < 11) {
+		    player.sendPackets(new S_SystemMessage("Weapon must be +11 to apply +5 attribute enchant."));
+		    return;
+		}
+		
 		final L1PcInventory inventory = player.getInventory();
 		if (player.isGm() && player.getAccessLevel().getLevel() >= FULL_GM
 				|| Config.ATTR_ENCHANT_CHANCE >= ThreadLocalRandom.current().nextInt(100) + 1) {

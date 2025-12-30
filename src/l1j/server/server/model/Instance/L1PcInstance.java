@@ -40,8 +40,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,9 +73,11 @@ import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.encryptions.Opcodes;
 import l1j.server.server.model.AcceleratorChecker;
 import l1j.server.server.model.BotCheckActivityManager;
+import l1j.server.server.model.BotTracker;
 import l1j.server.server.model.HpRegeneration;
 import l1j.server.server.model.L1AccessLevel;
 import l1j.server.server.model.L1Attack;
+import l1j.server.server.model.L1Attribute;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1ChatParty;
@@ -129,6 +133,7 @@ import l1j.server.server.serverpackets.S_Lawful;
 import l1j.server.server.serverpackets.S_Liquor;
 import l1j.server.server.serverpackets.S_MPUpdate;
 import l1j.server.server.serverpackets.S_NPCPack;
+import l1j.server.server.serverpackets.S_NpcChatPacket;
 import l1j.server.server.serverpackets.S_OtherCharPacks;
 import l1j.server.server.serverpackets.S_OwnCharAttrDef;
 import l1j.server.server.serverpackets.S_OwnCharStatus;
@@ -498,25 +503,75 @@ public class L1PcInstance extends L1Character {
 					try {
 						if (lastAttacker != L1PcInstance.this) {
 							L1PcInstance player = null;
+
+							// Identify killer
 							if (lastAttacker instanceof L1PcInstance) {
 								player = (L1PcInstance) lastAttacker;
-								_log.info("[Death] Broadcasting PvP kill message for " + getName());
-								L1World.getInstance().broadcastServerMessage(String.format("%s%s just owned %s%s in battle!",
-										player.getName(),
-										(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
-										getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
 							} else if (lastAttacker instanceof L1PetInstance) {
 								player = (L1PcInstance) ((L1PetInstance) lastAttacker).getMaster();
-								L1World.getInstance().broadcastServerMessage(String.format(
-										"%s%s just ate %s's%s face with uber pets!", player.getName(),
-										(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
-										getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
 							} else if (lastAttacker instanceof L1SummonInstance) {
 								player = (L1PcInstance) ((L1SummonInstance) lastAttacker).getMaster();
-								L1World.getInstance().broadcastServerMessage(String.format(
-										"%s%s just tore up %s%s with evil summons!", player.getName(),
-										(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
-										getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
+							}
+
+							// Suppress PvP global message if both are in warzone
+							boolean skipBroadcast = false;
+							for (L1War warCheck : L1World.getInstance().getWarList()) {
+								if (warCheck.CheckClanInWar(getClanname()) && warCheck.CheckClanInWar(player.getClanname())) {
+									int castleId = warCheck.GetCastleId();
+									if (L1CastleLocation.checkInWarArea(castleId, L1PcInstance.this) &&
+									    L1CastleLocation.checkInWarArea(castleId, player)) {
+										skipBroadcast = true;
+										break;
+									}
+								}
+							}
+
+							if (!skipBroadcast) {
+								if (lastAttacker instanceof L1PcInstance) {
+									_log.info("[Death] Broadcasting PvP kill message for " + getName());
+									L1World.getInstance().broadcastServerMessage(String.format("%s%s just owned %s%s in battle!",
+											player.getName(),
+											(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
+											getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
+								} else if (lastAttacker instanceof L1PetInstance) {
+									L1World.getInstance().broadcastServerMessage(String.format(
+											"%s%s just ate %s's%s face with uber pets!", player.getName(),
+											(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
+											getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
+								} else if (lastAttacker instanceof L1SummonInstance) {
+									L1World.getInstance().broadcastServerMessage(String.format(
+											"%s%s just tore up %s%s with evil summons!", player.getName(),
+											(player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
+											getName(), getClan() == null ? "" : " [" + getClanname() + "]"));
+								}
+							}
+
+							// Add war points and send local messages
+							for (L1War war : L1World.getInstance().getWarList()) {
+								if (war.CheckClanInWar(getClanname()) && war.CheckClanInWar(player.getClanname())) {
+									int castleId = war.GetCastleId();
+									if (L1CastleLocation.checkInWarArea(castleId, player) &&
+									    L1CastleLocation.checkInWarArea(castleId, L1PcInstance.this)) {
+										int teamId = war.getClanTeam(player.getClanname());
+										int points = player.isCrown() ? 6 : 4;
+										war.addPointsToTeam(teamId, points);
+										String msg = String.format(
+											    "%s%s just earned %d points for their team by defeating %s%s in the war!",
+											    player.getName(),
+											    (player.getClan() == null ? "" : " [" + player.getClanname() + "]"),
+											    points,
+											    getName(),
+											    (getClan() == null ? "" : " [" + getClanname() + "]")
+											);
+
+										for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+											if (L1CastleLocation.checkInWarArea(war.GetCastleId(), pc)) {
+												pc.sendPackets(new S_SystemMessage(msg));
+											}
+										}
+									}
+									break;
+								}
 							}
 							if (player != null) {						
 								_log.warn("[Death] lastAttacker resolved to null player for " + getName());
@@ -1413,30 +1468,14 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public boolean castleWarResult() {
-		if (getClanid() != 0 && isCrown()) {
-			L1Clan clan = L1World.getInstance().getClan(getClanname());
-			for (L1War war : L1World.getInstance().getWarList()) {
-				int warType = war.GetWarType();
-				boolean isInWar = war.CheckClanInWar(getClanname());
-				boolean isAttackClan = war.CheckAttackClan(getClanname());
-				if (getId() == clan.getLeaderId() && warType == 1 && isInWar && isAttackClan) {
-					String enemyClanName = war.GetEnemyClanName(getClanname());
-					if (enemyClanName != null) {
-						war.CeaseWar(getClanname(), enemyClanName);
-					}
-					break;
-				}
-			}
-		}
-
-		int castleId = 0;
-		boolean isNowWar = false;
-		castleId = L1CastleLocation.getCastleIdByArea(this);
-		if (castleId != 0) {
-			isNowWar = WarTimeController.getInstance().isNowWar(castleId);
-		}
-		return isNowWar;
+	    // Just return whether you're in a war zone, no war-ending logic
+	    int castleId = L1CastleLocation.getCastleIdByArea(this);
+	    if (castleId != 0) {
+	        return WarTimeController.getInstance().isNowWar(castleId);
+	    }
+	    return false;
 	}
+
 
 	public void checkChatInterval() {
 		long nowChatTimeInMillis = System.currentTimeMillis();
@@ -2464,6 +2503,11 @@ public class L1PcInstance extends L1Character {
 		setDead(true);
 		setNetConnection(null);
 		setPacketOutput(null);
+		try (Connection con = L1DatabaseFactory.getInstance().getConnection()) {
+		    flushBotTracking(con);
+		} catch (SQLException e) {
+		    e.printStackTrace();
+		}
 	}
 
 	public void makeReadyEndGhost() {
@@ -2509,7 +2553,7 @@ public class L1PcInstance extends L1Character {
 
 				attacker.setPetTarget(this);
 				attack.calcDamage();
-				attack.calcStaffOfMana();
+				attack.calcStaffOfMana(this);
 				attack.addPcPoisonAttack(attacker, this);
 				attack.addChaserAttack();
 			}
@@ -2648,6 +2692,7 @@ public class L1PcInstance extends L1Character {
 			}
 		}
 	}
+
 
 	public void receiveDamage(L1Character attacker, double damage, boolean isMagicDamage) { //
 		this.setLastAggressiveAct();
@@ -3141,19 +3186,31 @@ public class L1PcInstance extends L1Character {
 			byte[] logPacket = serverbasepacket.getContent();
 
 			if (logPacket.length > 0) {
-				int packetOpCode = (int) logPacket[0];
+				int packetOpCode = logPacket[0] & 0xFF;
 
-				if (packetOpCode != Opcodes.S_OPCODE_GAMETIME && packetOpCode != Opcodes.S_OPCODE_GLOBALCHAT
-						&& packetOpCode != Opcodes.S_OPCODE_NORMALCHAT
-						&& packetOpCode != Opcodes.S_OPCODE_WHISPERCHAT) {
-					// this.getNetConnection().addToServerPacketLog(IntArrayUtil.toCsv(ByteArrayUtil.convertToInt(logPacket)));
-				}
+				/*if (packetOpCode != Opcodes.S_OPCODE_GAMETIME &&
+					packetOpCode != Opcodes.S_OPCODE_GLOBALCHAT &&
+					packetOpCode != Opcodes.S_OPCODE_NORMALCHAT &&
+					packetOpCode != Opcodes.S_OPCODE_WHISPERCHAT) {
+
+					System.out.println("[SEND] Opcode: " + packetOpCode +
+						" | Class: " + serverbasepacket.getClass().getSimpleName() +
+						" | Length: " + logPacket.length);
+
+					StringBuilder sb = new StringBuilder();
+					for (byte b : logPacket) {
+						sb.append(String.format("%02X ", b));
+					}
+					System.out.println("[DATA] " + sb.toString());
+				}*/
 			}
 
 			_out.sendPacket(serverbasepacket);
 		} catch (Exception e) {
+			System.err.println("sendPackets exception: " + e.getMessage());
 		}
 	}
+
 
 	public void sendVisualEffectAtLogin() {
 		if (isCrown() && getClanid() != 0) {
@@ -4025,9 +4082,14 @@ public class L1PcInstance extends L1Character {
 
 	    for (L1Object visible : L1World.getInstance().getVisibleObjects(this, Config.PC_RECOGNIZE_RANGE)) {
 	        if (!knownsObject(visible)) {
-	            visible.onPerceive(this);
+	            visible.onPerceive(this); // Immediate send
+
+	            // One retry shortly after in case the first is dropped
+	            GeneralThreadPool.getInstance().schedule(() -> {
+	                visible.onPerceive(this);
+	            }, 100);
 	        } else {
-	            // Handle hidden NPCs revealing themselves
+	            // Hidden NPCs that reveal themselves when in view
 	            if (visible instanceof L1NpcInstance) {
 	                L1NpcInstance npc = (L1NpcInstance) visible;
 	                if (getLocation().isInScreen(npc.getLocation()) && npc.getHiddenStatus() != 0) {
@@ -4036,6 +4098,27 @@ public class L1PcInstance extends L1Character {
 	            }
 	        }
 
+	        // Monster-specific logic
+	        if (visible instanceof L1MonsterInstance) {
+	            L1MonsterInstance monster = (L1MonsterInstance) visible;
+
+	            // Invisible monster attacking the player — resend visibility
+	            if (monster.hasAttacked(this) && !knownsObject(monster)) {
+	                monster.onPerceive(this);
+	            }
+
+	            // Nudge stationary monsters every 2 seconds
+	            long now = System.currentTimeMillis();
+
+	            if (now - monster.getLastNudgeTime() > 2000) {
+	                if (monster.shouldNudgeAgain()) {
+	                    monster.receiveDamage(null, 1); // poke
+	                    monster.healHp(1);
+	                }
+	                monster.setLastNudgeTime(now);
+	            }
+	        }
+	    	
 	        // ✅ Handle monster HP bar display
 	        if ((hasSkillEffect(GMSTATUS_HPBAR) || hasSkillEffect(PLAYERSTATUS_HPBAR)) && visible instanceof L1MonsterInstance) {
 	            L1MonsterInstance monster = (L1MonsterInstance) visible;
@@ -4043,7 +4126,7 @@ public class L1PcInstance extends L1Character {
 	            if (isGm()) {
 	                int hpRatio = (monster.getCurrentHp() * 100) / monster.getMaxHp();
 	                sendPackets(new S_HPMeter(monster.getId(), hpRatio));
-	            } else if (monster.hasAttacked(this) && monster.wasAttackedRecently() && !monster.isBoss()) {
+	            } else if (monster.hasAttacked(this) && monster.wasAttackedRecently() && !monster.isBoss() && monster.getCurrentHp() > 0) {
 	                int hpRatio = (monster.getCurrentHp() * 100) / monster.getMaxHp();
 	                sendPackets(new S_HPMeter(monster.getId(), hpRatio));
 	            } else {
@@ -4540,5 +4623,62 @@ public class L1PcInstance extends L1Character {
 	    _isInspired = flag;
 	}
 
+	private final Map<L1Attribute, Integer> _elixirAlloc = new EnumMap<>(L1Attribute.class);
+
+	public Map<L1Attribute, Integer> getElixirAlloc() {
+	    return _elixirAlloc;
+	}
+
+	public void resetElixirAlloc() {
+	    _elixirAlloc.clear();
+	}
+
+	public int getTotalElixirAlloc() {
+	    int total = 0;
+	    for (int value : _elixirAlloc.values()) {
+	        total += value;
+	    }
+	    return total;
+	}
+
+	private BotTracker _botTracker;
+
+	public void startBotTracking() {
+	    _botTracker = new BotTracker(getId());
+	}
+
+	public BotTracker getBotTracker() {
+	    return _botTracker;
+	}
+
+	public void recordPotionUsage() {
+	    if (_botTracker == null) return;
+	    int hpPercent = (int) Math.round((getCurrentHp() * 100.0) / getMaxHp());
+	    //System.out.println("Potion used at HP%: " + hpPercent);
+	    _botTracker.recordPotion(hpPercent);
+	}
+
+	public void recordEscapeUsage() {
+	    if (_botTracker == null) return;
+	    int hpPercent = (int) Math.round((getCurrentHp() * 100.0) / getMaxHp());
+	    //System.out.println("Escape used at HP%: " + hpPercent);
+	    _botTracker.recordEscape(hpPercent);
+	}
+
+	public void flushBotTracking(Connection conn) {
+	    if (_botTracker != null) {
+	        _botTracker.flushToDatabase(conn);
+	    }
+	}
+
+	private long _lastWeaponSwapTime;
+
+	public long getLastWeaponSwapTime() {
+		return _lastWeaponSwapTime;
+	}
+
+	public void setLastWeaponSwapTime(long time) {
+		_lastWeaponSwapTime = time;
+	}
 
 }

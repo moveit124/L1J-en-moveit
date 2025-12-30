@@ -421,15 +421,14 @@ public class Client implements Runnable, PacketOutput {
 		try {
 			ServerBasePacket packet = sendqueue.poll();
 			if (packet != null) {
-				byte abyte0[] = packet.getContent();
-				if (abyte0.length < 4) {
+				byte[] abyte0 = packet.getContent();
+				if (abyte0 == null || abyte0.length < 4) {
 					_log.info("Something tried to send a bad/empty packet");
 					_log.info("Packet type: " + packet.getClass().getName());
-					_log.info("Packet Length: " + abyte0.length);
+					_log.info("Packet Length: " + (abyte0 == null ? "null" : abyte0.length));
 					return;
 				}
-				char ac[] = new char[abyte0.length];
-				ac = UChar8.fromArray(abyte0);
+				char[] ac = UChar8.fromArray(abyte0);
 				ac = L1JEncryption.encrypt(ac, get_clkey());
 				abyte0 = UByte8.fromArray(ac);
 				int j = abyte0.length + 2;
@@ -443,15 +442,13 @@ public class Client implements Runnable, PacketOutput {
 			// _log.error("", e);
 			// _log.error("Packet type: " + packet.getClass().getName());
 		}
-
 	}
-
 	@Override
 	public void sendPacket(ServerBasePacket packet) {
 		sendqueue.offer(packet);
 		NetworkServer.getInstance().getClientQueue().offer(this);
-
 	}
+
 
 	public void set_clkey(L1JKeys _clkey) {
 		this._clkey = _clkey;

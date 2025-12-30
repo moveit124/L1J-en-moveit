@@ -142,7 +142,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 					}
 				}
 				attack.calcDamage();
-				attack.calcStaffOfMana();
+				attack.calcStaffOfMana(this);
 				attack.addPcPoisonAttack(player, this);
 				attack.addChaserAttack();
 			}
@@ -152,7 +152,7 @@ public class L1GuardianInstance extends L1NpcInstance {
 			L1Attack attack = new L1Attack(player, this);
 			if (attack.calcHit()) {
 				attack.calcDamage();
-				attack.calcStaffOfMana();
+				attack.calcStaffOfMana(this);
 				attack.addPcPoisonAttack(player, this);
 				attack.addChaserAttack();
 			}

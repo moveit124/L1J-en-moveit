@@ -79,6 +79,11 @@ public class L1HpBar implements L1CommandExecutor {
 	        if (monster.isBoss()) {
 	            return false;
 	        }
+	        
+	        // Exclude dead monsters
+	        if (monster.getCurrentHp() <= 0) {
+	        	return false;
+	        }
 
 	     // ✅ Only show HP bars for monsters attacked by the player
 	        return monster.hasAttacked(player);

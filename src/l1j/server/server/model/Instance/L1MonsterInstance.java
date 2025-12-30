@@ -294,7 +294,7 @@ public class L1MonsterInstance extends L1NpcInstance {
 			L1Attack attack = new L1Attack(pc, this);
 			if (attack.calcHit()) {
 				attack.calcDamage();
-				attack.calcStaffOfMana();
+				attack.calcStaffOfMana(this);
 				attack.addPcPoisonAttack(pc, this);
 				attack.addChaserAttack();
 			}
@@ -560,6 +560,9 @@ public class L1MonsterInstance extends L1NpcInstance {
 
 	private void distributeExpDropKarma(L1Character lastAttacker) {
 		if (lastAttacker == null) {
+			    if (isDead()) {
+			        DropTable.getInstance().dropToGround(this);
+			    }
 			return;
 		}
 		L1PcInstance pc = null;
@@ -652,7 +655,15 @@ public class L1MonsterInstance extends L1NpcInstance {
 						giveKarma(pc);
 					}
 				}
+			} else {
+			    if (isDead()) {
+			        DropTable.getInstance().dropToGround(this);
+			    }
 			}
+		} else {
+		    if (isDead()) {
+		        DropTable.getInstance().dropToGround(this);
+		    }
 		}
 	}
 
@@ -840,4 +851,46 @@ public class L1MonsterInstance extends L1NpcInstance {
 		DropTable.getInstance().setDrop(this, getInventory());
 		getInventory().shuffle();
 	}
+	private long _LastReceivedFirstSeenDamage;
+	
+	public void setLastReceivedFirstSeenDamage() {
+		_LastReceivedFirstSeenDamage = System.currentTimeMillis();
+		
+	}
+	public long getLastReceivedFirstSeenDamage() {
+		// TODO Auto-generated method stub
+		return _LastReceivedFirstSeenDamage;
+	}
+	
+
+	// Inside L1MonsterInstance
+	private Set<Integer> _perceptionFixesTried = new HashSet<>();
+
+	public boolean hasTriedPerceptionFix(int playerId) {
+	    return _perceptionFixesTried.contains(playerId);
+	}
+
+	public void markPerceptionFixTried(int playerId) {
+	    _perceptionFixesTried.add(playerId);
+	}
+	
+	private long _lastNudgeTime = 0;
+	private L1Location _lastNudgeLoc = null;
+
+	public boolean shouldNudgeAgain() {
+	    if (_lastNudgeLoc == null || !_lastNudgeLoc.equals(getLocation())) {
+	        _lastNudgeLoc = getLocation();
+	        return false; // it moved
+	    }
+	    return true; // still stuck
+	}
+
+	public void setLastNudgeTime(long time) {
+	    _lastNudgeTime = time;
+	}
+
+	public long getLastNudgeTime() {
+	    return _lastNudgeTime;
+	}
+
 }

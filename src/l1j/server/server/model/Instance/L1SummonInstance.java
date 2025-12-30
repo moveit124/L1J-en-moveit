@@ -418,7 +418,7 @@ public class L1SummonInstance extends L1NpcInstance {
 		L1Attack attack = new L1Attack(attacker, this);
 		if (attack.calcHit()) {
 			attack.calcDamage();
-			attack.calcStaffOfMana();
+			attack.calcStaffOfMana(this);
 			attack.addPcPoisonAttack(attacker, this);
 		}
 		attack.action();

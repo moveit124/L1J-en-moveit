@@ -153,6 +153,11 @@ public class C_GiveItem extends ClientBasePacket {
 		
 		item = inv.tradeItem(item, count, targetInv);
 		
+		if (item != null) {
+		    item.setGivenToNpc(true);
+		}
+
+		
 		try {
 			L1ItemInstance pcitem = pc.getInventory().getItem(itemId);
 			int after_inv = 0;

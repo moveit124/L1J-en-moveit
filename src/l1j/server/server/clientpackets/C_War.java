@@ -150,8 +150,10 @@ public class C_War extends ClientBasePacket {
 				for (int k = 0; k < clanMember.length; k++) {
 					if (L1CastleLocation.checkInWarArea(castle_id,
 							clanMember[k])) {
-						player.sendPackets(new S_ServerMessage(477));
-						return;
+	                	if (clanMember[k].getClanRank() != 4) {
+	                		clanMember[k].sendPackets(new S_SystemMessage("Failed: Member " + clanMember[k].getName() + " is in war area."));
+	                		return;
+	                	}
 					}
 				}
 				boolean enemyInWar = false;

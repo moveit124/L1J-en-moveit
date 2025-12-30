@@ -18,18 +18,29 @@
  */
 package l1j.server.server.model;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import l1j.server.Config;
+import l1j.server.L1DatabaseFactory;
 import l1j.server.server.GeneralThreadPool;
 import l1j.server.server.controllers.WarTimeController;
 import l1j.server.server.datatables.CastleTable;
 import l1j.server.server.datatables.ClanTable;
+import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1PetInstance;
+import l1j.server.server.model.Instance.L1SummonInstance;
 import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.serverpackets.S_CastleMaster;
 import l1j.server.server.serverpackets.S_OwnCharAttrDef;
@@ -39,6 +50,7 @@ import l1j.server.server.serverpackets.S_ServerMessage;
 import l1j.server.server.serverpackets.S_SystemMessage;
 import l1j.server.server.serverpackets.S_War;
 import l1j.server.server.templates.L1Castle;
+import l1j.server.server.templates.L1Npc;
 
 // Referenced classes of package l1j.server.server.model:
 // L1War
@@ -48,7 +60,7 @@ public class L1War {
 	private final ArrayList<String> _attackClanList = new ArrayList<String>();
 	private String _defenceClanName = null;
 	private int _warType = 0;
-//	private int _castleId = 0;
+	private int _castleId = 0;
 	private L1Castle _castle = null;
 	private Calendar _warEndTime;
 	private boolean _isWarTimerDelete = false;
@@ -57,6 +69,8 @@ public class L1War {
 
 	// Optional: Which player captured which tower
 	private final Map<Integer, String> _towerCapturer = new HashMap<>();
+	
+	private final Map<Integer, Long> _castleWarStartTimes = new HashMap<>();
 
 	public L1War() {
 	}
@@ -69,7 +83,23 @@ public class L1War {
 	        Thread.currentThread().setName("L1War-CastleWarTimer");
 
 	        try {
-	            long warStartMillis = System.currentTimeMillis();
+	        	int castleId = GetCastleId();
+	        	long warStartMillis = 0;
+	        	try (Connection con = L1DatabaseFactory.getInstance().getConnection();
+	        	     PreparedStatement ps = con.prepareStatement("SELECT war_time FROM castle WHERE castle_id = ?")) {
+	        	    ps.setInt(1, castleId);
+	        	    try (ResultSet rs = ps.executeQuery()) {
+	        	        if (rs.next()) {
+	        	            Timestamp warTime = rs.getTimestamp("war_time");
+	        	            if (warTime != null) {
+	        	                warStartMillis = warTime.getTime();
+	        	            }
+	        	        }
+	        	    }
+	        	} catch (SQLException e) {
+	        	    System.out.println("Failed to load war start time from DB: " + e.getMessage());
+	        	}
+
 	            GeneralThreadPool.getInstance().scheduleAtFixedRate(() -> {
 	                try {
 	                    long now = System.currentTimeMillis();
@@ -101,6 +131,87 @@ public class L1War {
 
 	                            nearby.setLastInspiredTimestamp(System.currentTimeMillis());
 	                        }
+	                        
+	                     // 🏰 Tower Regen Buff Logic
+	                        for (L1Object obj : L1World.getInstance().getObject()) {
+	                            if (!(obj instanceof L1TowerInstance)) continue;
+
+	                            L1TowerInstance tower = (L1TowerInstance) obj;
+	                            int towerId = tower.getHeineTowerIdAtLocation(tower.getX(), tower.getY(), tower.getMapId());
+
+	                            if (tower.isDead()) {
+	                                tower.updateRoyalRegenBuff(towerId, null); // Force despawn if dead
+	                                continue;
+	                            }
+
+	                            if (towerId == -1) continue;
+
+	                            // 🔍 Find war for this castle
+	                            L1War activeWar = null;
+	                            for (L1War w : L1World.getInstance().getWarList()) {
+	                                if (w.GetCastleId() == tower.getCastleId()) {
+	                                    activeWar = w;
+	                                    break;
+	                                }
+	                            }
+
+	                            boolean validRoyalNearby = false;
+
+	                            for (L1PcInstance pc1 : L1World.getInstance().getVisiblePlayer(tower, L1TowerInstance.REGEN_RADIUS)) {
+	                                if (!pc1.isCrown() || pc1.isDead()) continue;
+
+	                                int ownerTeam = getTowerOwner(towerId);
+	                                int playerTeam = getClanTeam(pc1.getClanname());
+
+	                                // ✅ Only allow regen from war-participating royals on the owning team
+	                                if (ownerTeam != -1 && ownerTeam == playerTeam && activeWar != null && activeWar.CheckClanInWar(pc1.getClanname())) {
+	                                    tower.updateRoyalRegenBuff(towerId, pc1); // heal + spawn
+	                                    validRoyalNearby = true;
+	                                    break;
+	                                }
+	                            }
+
+	                            if (!validRoyalNearby) {
+	                                tower.updateRoyalRegenBuff(towerId, null); // will trigger despawn
+	                            }
+	                        }
+	                    }
+	                    
+		                 //Pet/Summon warzone check (teleport owner if pet is in warzone)
+	                    for (L1Object obj : L1World.getInstance().getObject()) {
+	                        if (obj instanceof L1PetInstance || obj instanceof L1SummonInstance) {
+	                            L1Character summon = (L1Character) obj;
+
+	                            if (!(summon instanceof L1NpcInstance)) {
+	                                continue;
+	                            }
+
+	                            L1PcInstance owner = null;
+	                            try {
+	                                owner = (L1PcInstance) ((L1NpcInstance) summon).getMaster();
+	                            } catch (Exception e) {
+	                                continue;
+	                            }
+
+	                            if (owner == null) {
+	                                continue;
+	                            }
+
+	                            if (owner.isGm()) {
+	                                continue;
+	                            }
+
+	                            if (!WarTimeController.getInstance().isNowWar(castleId)) {
+	                                continue;
+	                            }
+
+	                            if (L1CastleLocation.checkInWarArea(castleId, summon)) {
+	                                int[] loc = L1CastleLocation.getGetBackLoc(castleId);
+	                                owner.sendPackets(new S_SystemMessage("Pets and summons are not allowed in the war area! You have been relocated."));
+	                                L1Teleport.teleport(owner, loc[0], loc[1], (short) loc[2], owner.getHeading(), true);
+	                            } else {
+	                            }
+	                        }
 	                    }
 
 	                    // Remove buffs when expired
@@ -122,6 +233,8 @@ public class L1War {
 	                    e.printStackTrace();
 	                }
 	            }, 0, 1000);
+	            
+	            Map<String, Integer> towerCapturesByClan = new HashMap<>();
 
 	            for (int i = 1; i <= 12; i++) {
 	                long nextTick = warStartMillis + (i * 5 * 60 * 1000L);
@@ -131,13 +244,16 @@ public class L1War {
 	                    Thread.sleep(delay);
 	                }
 
+	                Map<String, Integer> clanPointMap = new LinkedHashMap<>();
+
 	                for (int towerId = 1; towerId <= 3; towerId++) {
 	                    int teamId = getTowerOwner(towerId);
 	                    if (teamId == -1) continue;
 
 	                    int bonusPoints = 10;
-
 	                    String capturer = getTowerCapturer(towerId);
+	                    String clanName = "Unknown";
+
 	                    if (capturer != null) {
 	                        L1Clan capturerClan = L1World.getInstance().getClan(capturer);
 	                        if (capturerClan != null && getClanTeam(capturer) == teamId) {
@@ -145,18 +261,66 @@ public class L1War {
 	                            if (leader != null && leader.isCrown()) {
 	                                bonusPoints = 15;
 	                            }
+	                            clanName = capturer;
 	                        }
 	                    }
 
 	                    addPointsToTeam(teamId, bonusPoints);
 
+	                    if (!clanName.equals("Unknown")) {
+	                        clanPointMap.put(clanName, clanPointMap.getOrDefault(clanName, 0) + bonusPoints);
+	                        towerCapturesByClan.put(clanName, towerCapturesByClan.getOrDefault(clanName, 0) + 1);
+	                    }
+
 	                    setTowerOwner(towerId, -1);
 	                    setTowerCapturer(towerId, null);
 	                    L1TowerInstance.removeGlowNpcsAtTower(towerId);
+	                    L1TowerInstance.resetAllRegenNpcs();
 	                }
 
+	                if (i != 12 && !clanPointMap.isEmpty()) {
+	                    List<Map.Entry<String, Integer>> sorted = new ArrayList<>(clanPointMap.entrySet());
+	                    sorted.removeIf(e -> e.getValue() == 0);
+
+	                    // Sort by total score, descending
+	                    sorted.sort((a, b) -> {
+	                        int totalA = getPointsForTeam(getClanTeam(a.getKey()));
+	                        int totalB = getPointsForTeam(getClanTeam(b.getKey()));
+	                        return Integer.compare(totalB, totalA);
+	                    });
+
+	                    StringBuilder captureLine = new StringBuilder("Captured this round: ");
+	                    StringBuilder rankingsLine = new StringBuilder("Current Rankings: ");
+
+	                    int addedCaptures = 0;
+	                    for (Map.Entry<String, Integer> entry : sorted) {
+	                        if (towerCapturesByClan.containsKey(entry.getKey()) && addedCaptures < 3) {
+	                            if (addedCaptures > 0) captureLine.append(", ");
+	                            captureLine.append(entry.getKey()).append(" x").append(towerCapturesByClan.get(entry.getKey()));
+	                            addedCaptures++;
+	                        }
+	                    }
+
+	                    for (int rank = 0; rank < Math.min(3, sorted.size()); rank++) {
+	                        String clan = sorted.get(rank).getKey();
+	                        int totalPoints = getPointsForTeam(getClanTeam(clan));
+	                        if (rank > 0) rankingsLine.append(" | ");
+	                        rankingsLine.append((rank + 1)).append("st: ").append(clan).append(" (").append(totalPoints).append(" pts)");
+	                    }
+
+	                    for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+	                        if (L1CastleLocation.checkInWarArea(GetCastleId(), pc)) {
+	                            if (addedCaptures > 0)
+	                                pc.sendPackets(new S_SystemMessage(captureLine.toString()));
+	                            pc.sendPackets(new S_SystemMessage(rankingsLine.toString()));
+	                        }
+	                    }
+	                }
+
+	            
 	                if (_isWarTimerDelete) return;
 	            }
+
 
 	            // Wait for war end (default: 60 min from war start)
 	            while (!_warEndTime.before(WarTimeController.getRealTime())) {
@@ -164,17 +328,32 @@ public class L1War {
 	                if (_isWarTimerDelete) return;
 	            }
 
-	            assignCastleToHighestScoringTeam();
-	            CeaseCastleWar();
-	            delete();
+	            String winner = assignCastleToHighestScoringTeam();
+	            if (winner != null) {
+	                WinCastleWar(winner);
+	            } else {
+	                CeaseCastleWar();
+	            }
+
 
 	        } catch (Exception e) {
 	        }
 	    }
 	}
+	
+	public L1War(int castleId) {
+	    _castleId = castleId;
+	    // Init any lists if needed
+	}
+
+	public void startCastleWar(int castleId) {
+	    if (!_castleWarStartTimes.containsKey(castleId)) {
+	        _castleWarStartTimes.put(castleId, System.currentTimeMillis());
+	    }
+	}
 
 
-	public void assignCastleToHighestScoringTeam() {
+	public String assignCastleToHighestScoringTeam() {
 	    int highestPoints = -1;
 	    int winningTeamId = -1;
 	    int secondHighestPoints = -1;
@@ -194,9 +373,30 @@ public class L1War {
 	    }
 
 	    // 🟨 Handle tie
+	    int castleId = GetCastleId();
+	    String currentOwner = null;
+	    for (L1Clan c : L1World.getInstance().getAllClans()) {
+	        if (c.getCastleId() == castleId) {
+	            currentOwner = c.getClanName();
+	            break;
+	        }
+	    }
+
 	    if (highestPoints == secondHighestPoints) {
-	        L1World.getInstance().broadcastServerMessage("⚔️ The war ends in a draw! No clan takes the castle.");
-	        return;
+	        boolean ownerInTie = false;
+	        for (Map.Entry<String, Integer> entry : _clanTeamMap.entrySet()) {
+	            if (entry.getValue() == winningTeamId && entry.getKey().equalsIgnoreCase(currentOwner)) {
+	                ownerInTie = true;
+	                break;
+	            }
+	        }
+
+	        if (ownerInTie) {
+	            L1World.getInstance().broadcastServerMessage("The war ends in a draw! The current owner retains the castle.");
+	        } else {
+	            L1World.getInstance().broadcastServerMessage("The war ends in a draw! No clan takes the castle.");
+	        }
+	        return null;
 	    }
 
 	    // Get clan name of winner
@@ -208,38 +408,27 @@ public class L1War {
 	        }
 	    }
 
-	    if (winningClanName == null) return;
-
+	    if (winningClanName == null) return null;
 	    L1Clan winningClan = L1World.getInstance().getClan(winningClanName);
-	    if (winningClan == null) return;
+	    if (winningClan == null) return null;
 
-	    int castleId = GetCastleId();
-
-	    // Remove ownership from previous owner
+	    // Assign castle
 	    for (L1Clan c : L1World.getInstance().getAllClans()) {
 	        if (c.getCastleId() == castleId) {
 	            c.setCastleId(0);
 	            ClanTable.getInstance().updateClan(c);
 	        }
 	    }
-
-	    // Assign castle to winner
 	    winningClan.setCastleId(castleId);
 	    ClanTable.getInstance().updateClan(winningClan);
+	    
+	    WarTimeController.getInstance().clearCastle(castleId);
 
 	    for (L1PcInstance pc : winningClan.getOnlineClanMember()) {
 	        if (pc.getId() == winningClan.getLeaderId()) {
 	            pc.sendPackets(new S_CastleMaster(castleId, pc.getId()));
 	            pc.broadcastPacket(new S_CastleMaster(castleId, pc.getId()));
 	        }
-	    }
-
-	    // 🎉 Build final score summary
-	    StringBuilder scoreSummary = new StringBuilder();
-	    for (Map.Entry<String, Integer> entry : _clanTeamMap.entrySet()) {
-	        int teamId = entry.getValue();
-	        int score = _teamPoints.getOrDefault(teamId, 0);
-	        scoreSummary.append(entry.getKey()).append(": ").append(score).append(" points | ");
 	    }
 
 	    // ✨ Flavor based on gap
@@ -256,10 +445,35 @@ public class L1War {
 	        flavor = "The war ends in a draw. No clan stood above the rest this time.";
 	    }
 
-
 	    // 🧾 Final broadcast
-	    L1World.getInstance().broadcastServerMessage(winningClanName + " has claimed the castle with " + highestPoints + " points. " + flavor);
-	    L1World.getInstance().broadcastServerMessage("Final scores: " + scoreSummary.toString());
+	    L1World.getInstance().broadcastServerMessage(winningClanName + " has claimed the castle with " + highestPoints + " points.");
+	    L1World.getInstance().broadcastServerMessage(flavor);
+	    L1World.getInstance().broadcastServerMessage("Final scores:");
+
+	    List<Map.Entry<String, Integer>> entries = new ArrayList<>(_clanTeamMap.entrySet());
+	    entries.sort((a, b) -> _teamPoints.getOrDefault(b.getValue(), 0) - _teamPoints.getOrDefault(a.getValue(), 0));
+
+	    for (int i = 0; i < entries.size(); i += 2) {
+	        StringBuilder line = new StringBuilder();
+
+	        Map.Entry<String, Integer> first = entries.get(i);
+	        int score1 = _teamPoints.getOrDefault(first.getValue(), 0);
+	        line.append(first.getKey()).append(": ").append(score1);
+
+	        if (i + 1 < entries.size()) {
+	            Map.Entry<String, Integer> second = entries.get(i + 1);
+	            int score2 = _teamPoints.getOrDefault(second.getValue(), 0);
+	            line.append("  |  ").append(second.getKey()).append(": ").append(score2);
+	        }
+
+	        L1World.getInstance().broadcastServerMessage(line.toString());
+	    }
+	    for (L1War war : L1World.getInstance().getWarList()) {
+	        if (war.GetCastleId() == castleId) {
+	            war.endWar();
+	        }
+	    }
+	    return winningClanName;
 	}
 	
 	class SimWarTimer implements Runnable {
@@ -433,78 +647,62 @@ public class L1War {
 	}
 
 	public void WinCastleWar(String clan_name) {
-		String defence_clan_name = GetDefenceClanName();
-		L1World.getInstance().broadcastPacketToAll(
-				new S_ServerMessage(231, clan_name, defence_clan_name));
+	    String defence_clan_name = GetDefenceClanName();
 
-		L1Clan defence_clan = L1World.getInstance().getClan(defence_clan_name);
-		if (defence_clan != null) {
-			L1PcInstance defence_clan_member[] = defence_clan
-					.getOnlineClanMember();
-			for (int i = 0; i < defence_clan_member.length; i++) {
-				for (String clanName : GetAttackClanList()) {
-					defence_clan_member[i].sendPackets(new S_War(3,
-							defence_clan_name, clanName));
-				}
-			}
-		}
-		String clanList[] = GetAttackClanList();
-		for (int j = 0; j < clanList.length; j++) {
-			if (clanList[j] != null) {
-				L1World.getInstance()
-						.broadcastPacketToAll(
-								new S_ServerMessage(227, defence_clan_name,
-										clanList[j]));
-				L1Clan clan = L1World.getInstance().getClan(clanList[j]);
-				if (clan != null) {
-					L1PcInstance clan_member[] = clan.getOnlineClanMember();
-					for (int k = 0; k < clan_member.length; k++) {
-						clan_member[k].sendPackets(new S_War(3, clanList[j],
-								defence_clan_name));
-					}
-				}
-			}
-		}
-		_isWarTimerDelete = true;
-		delete();
+	    L1Clan defence_clan = L1World.getInstance().getClan(defence_clan_name);
+	    if (defence_clan != null) {
+	        L1PcInstance[] defence_clan_member = defence_clan.getOnlineClanMember();
+	        for (L1PcInstance member : defence_clan_member) {
+	            for (String attacker : GetAttackClanList()) {
+	                member.sendPackets(new S_War(3, defence_clan_name, attacker));
+	            }
+	        }
+	    }
+
+	    String[] clanList = GetAttackClanList();
+	    for (String attacker : clanList) {
+	        if (attacker != null) {
+	            L1Clan clan = L1World.getInstance().getClan(attacker);
+	            if (clan != null) {
+	                L1PcInstance[] clan_member = clan.getOnlineClanMember();
+	                for (L1PcInstance member : clan_member) {
+	                    member.sendPackets(new S_War(3, attacker, defence_clan_name));
+	                }
+	            }
+	        }
+	    }
+
+	    _isWarTimerDelete = true;
+	    delete();
 	}
-
 	public void CeaseCastleWar() {
-		String defence_clan_name = GetDefenceClanName();
-		String clanList[] = GetAttackClanList();
-		if (defence_clan_name != null) {
-			L1World.getInstance().broadcastPacketToAll(
-					new S_ServerMessage(231, defence_clan_name, clanList[0]));
-		}
+	    String defence_clan_name = GetDefenceClanName();
+	    String[] clanList = GetAttackClanList();
 
-		L1Clan defence_clan = L1World.getInstance().getClan(defence_clan_name);
-		if (defence_clan != null) {
-			L1PcInstance defence_clan_member[] = defence_clan
-					.getOnlineClanMember();
-			for (int i = 0; i < defence_clan_member.length; i++) {
-				defence_clan_member[i].sendPackets(new S_War(4,
-						defence_clan_name, clanList[0]));
-			}
-		}
-		for (int j = 0; j < clanList.length; j++) {
-			if (clanList[j] != null) {
-				L1World.getInstance()
-						.broadcastPacketToAll(
-								new S_ServerMessage(227, defence_clan_name,
-										clanList[j]));
-				L1Clan clan = L1World.getInstance().getClan(clanList[j]);
-				if (clan != null) {
-					L1PcInstance clan_member[] = clan.getOnlineClanMember();
-					for (int k = 0; k < clan_member.length; k++) {
-						clan_member[k].sendPackets(new S_War(3, clanList[j],
-								defence_clan_name));
-					}
-				}
-			}
-		}
-		_isWarTimerDelete = true;
-		delete();
+	    L1Clan defence_clan = L1World.getInstance().getClan(defence_clan_name);
+	    if (defence_clan != null) {
+	        L1PcInstance[] defence_clan_member = defence_clan.getOnlineClanMember();
+	        for (L1PcInstance member : defence_clan_member) {
+	            member.sendPackets(new S_War(4, defence_clan_name, clanList[0]));
+	        }
+	    }
+
+	    for (String attacker : clanList) {
+	        if (attacker != null) {
+	            L1Clan clan = L1World.getInstance().getClan(attacker);
+	            if (clan != null) {
+	                L1PcInstance[] clan_member = clan.getOnlineClanMember();
+	                for (L1PcInstance member : clan_member) {
+	                    member.sendPackets(new S_War(3, attacker, defence_clan_name));
+	                }
+	            }
+	        }
+	    }
+
+	    _isWarTimerDelete = true;
+	    delete();
 	}
+
 
 	public void DeclareWar(String clan1_name, String clan2_name) {
 		if (GetWarType() == 1) {
@@ -619,7 +817,30 @@ public class L1War {
 
 	public void setTowerOwner(int towerId, int teamId) {
 	    _towerTeamMap.put(towerId, teamId);
+
+	    if (teamId == -1) {
+	        int x = L1TowerInstance.getTowerSpawnX(towerId);
+	        int y = L1TowerInstance.getTowerSpawnY(towerId);
+	        short mapId = L1TowerInstance.getTowerMapId(towerId);
+
+	        // Remove old tower
+	        for (L1Object obj : L1World.getInstance().getObject()) {
+	            if (obj instanceof L1TowerInstance) {
+	                L1TowerInstance tower = (L1TowerInstance) obj;
+	                if (tower.getX() == x && tower.getY() == y && tower.getMapId() == mapId) {
+	                    tower.deleteMe();
+	                }
+	            }
+	        }
+
+	        // Respawn tower
+	        L1Npc npc = NpcTable.getInstance().getTemplate(81111); // Tower NPC ID
+	        if (npc != null) {
+	            L1TowerInstance.SpawnWarObject(npc, x, y, mapId);
+	        }
+	    }
 	}
+
 
 	public int getTowerOwner(int towerId) {
 	    return _towerTeamMap.getOrDefault(towerId, -1); // -1 = unowned
@@ -630,6 +851,13 @@ public class L1War {
 	public void AddAttackClan(String attack_clan_name) {
 	    if (_attackClanList.contains(attack_clan_name)) {
 	        return; // already added, nothing to do
+	    }
+	    // If this clan owns the castle, assign team 7
+	    L1Clan ownerClan = L1World.getInstance().getClan(attack_clan_name);
+	    if (ownerClan != null && ownerClan.getCastleId() == 5) {
+	        _attackClanList.add(attack_clan_name);
+	        _clanTeamMap.put(attack_clan_name, 7); // Force team 7
+	        return;
 	    }
 
 	    // Check if we’ve hit the max (8 teams: index 0–7)
@@ -715,5 +943,19 @@ public class L1War {
 	public String getTowerCapturer(int towerId) {
 	    return _towerCapturer.getOrDefault(towerId, null);
 	}
+	
+	private boolean _ended = false;
+
+	public void endWar() {
+	    if (_ended) return;
+	    _ended = true;
+
+	    L1World.getInstance().removeWar(this);
+
+	    // Optional: reset team state if needed
+	    _clanTeamMap.clear();
+	    _teamPoints.clear();
+	}
+
 
 }

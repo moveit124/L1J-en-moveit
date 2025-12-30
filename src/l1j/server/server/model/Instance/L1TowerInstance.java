@@ -48,6 +48,126 @@ public class L1TowerInstance extends L1NpcInstance {
 	private L1Character _lastattacker;
 	private int _castle_id;
 	private int _crackStatus;
+	
+	private boolean _regenBuffActive = false;
+	private long _lastRegenTick = 0;
+
+	public static final int REGEN_RADIUS = 4;
+	private static final int REGEN_INTERVAL_MS = 1000;
+	private static final double REGEN_PERCENT = 0.03;
+
+	private static final int HIDDEN_X = 33333;
+	private static final int HIDDEN_Y = 33333;
+	private static final short HIDDEN_MAP = 3;
+	private static final int REGEN_NPC_ID = 101006;
+
+	// 0 = tower 1, 1 = tower 2, 2 = tower 3
+	private static final L1NpcInstance[] _regenNpcs = new L1NpcInstance[3];
+
+	public static void initializeRegenNpcs() {
+		for (int i = 0; i < _regenNpcs.length; i++) {
+			try {
+				
+				L1NpcInstance npc = NpcTable.getInstance().newNpcInstance(REGEN_NPC_ID);
+				npc.setId(IdFactory.getInstance().nextId());
+				npc.setX(HIDDEN_X + i);
+				npc.setY(HIDDEN_Y + i);
+				npc.setMap(HIDDEN_MAP);
+				npc.setHomeX(HIDDEN_X + i);
+				npc.setHomeY(HIDDEN_Y + i);
+				npc.setHeading(0);
+
+				L1World.getInstance().storeObject(npc);
+				L1World.getInstance().addVisibleObject(npc);
+
+				_regenNpcs[i] = npc;
+			} catch (Exception e) {
+				System.out.println("❌ Failed to spawn regen NPC #" + i);
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void updateRoyalRegenBuff(int towerId, L1PcInstance triggeringPlayer) {
+		if (towerId < 1 || towerId > 3) return;
+
+		int npcIndex = towerId - 1;
+		L1NpcInstance npc = _regenNpcs[npcIndex];
+		if (npc == null) return;
+
+		if (triggeringPlayer == null) {
+			if (_regenBuffActive) {
+				_regenBuffActive = false;
+				teleportRegenNpc(npcIndex, HIDDEN_X, HIDDEN_Y, HIDDEN_MAP);
+			}
+			return;
+		}
+
+		if (!_regenBuffActive) {
+			_regenBuffActive = true;
+
+			int[] loc;
+			if (towerId == 1) loc = L1CastleLocation.getHeineTower1Loc();
+			else if (towerId == 2) loc = L1CastleLocation.getHeineTower2Loc();
+			else loc = L1CastleLocation.getHeineTower3Loc();
+
+			teleportRegenNpc(npcIndex, loc[0], loc[1], (short) loc[2]);
+		}
+
+		if (System.currentTimeMillis() - _lastRegenTick >= REGEN_INTERVAL_MS) {
+		    int maxHp = getMaxHp();
+		    int capHp = (int) (maxHp * 0.74);
+		    int heal = (int) (maxHp * REGEN_PERCENT);
+		    int newHp = Math.min(getCurrentHp() + heal, capHp);
+		    setCurrentHp(newHp);
+		    _lastRegenTick = System.currentTimeMillis();
+
+			if (newHp == capHp) {
+			    if (_crackStatus != 1) {
+			        broadcastPacket(new S_DoActionGFX(getId(), ActionCodes.ACTION_TowerCrack1));
+			        setStatus(ActionCodes.ACTION_TowerCrack1);
+			        _crackStatus = 1;
+			    }
+			} else if (newHp > (maxHp * 2 / 4)) {
+			    if (_crackStatus != 2) {
+			        broadcastPacket(new S_DoActionGFX(getId(), ActionCodes.ACTION_TowerCrack2));
+			        setStatus(ActionCodes.ACTION_TowerCrack2);
+			        _crackStatus = 2;
+			    }
+			} else if (newHp > (maxHp * 1 / 4)) {
+			    if (_crackStatus != 3) {
+			        broadcastPacket(new S_DoActionGFX(getId(), ActionCodes.ACTION_TowerCrack3));
+			        setStatus(ActionCodes.ACTION_TowerCrack3);
+			        _crackStatus = 3;
+			    }
+			}
+		}
+	}
+	public static void resetAllRegenNpcs() {
+	    for (int i = 0; i < _regenNpcs.length; i++) {
+	        teleportRegenNpc(i, HIDDEN_X + i, HIDDEN_Y + i, HIDDEN_MAP);
+	    }
+	}
+
+	private static void teleportRegenNpc(int index, int x, int y, short mapId) {
+		L1NpcInstance npc = _regenNpcs[index];
+		if (npc == null) return;
+
+		L1World.getInstance().removeVisibleObject(npc);
+
+		npc.setX(x);
+		npc.setY(y);
+		npc.setMap(mapId);
+		npc.setHomeX(x);
+		npc.setHomeY(y);
+		
+		L1World.getInstance().addVisibleObject(npc);
+		npc.broadcastPacket(new S_RemoveObject(npc));
+		npc.broadcastPacket(new S_NPCPack(npc));
+	}
+
+
+
 
 	@Override
 	public void onPerceive(L1PcInstance perceivedFrom) {
@@ -137,28 +257,51 @@ public class L1TowerInstance extends L1NpcInstance {
 			    }
 			}
 
-			
-			boolean existDefenseClan = false;
-			for (L1Clan clan : L1World.getInstance().getAllClans()) {
-				int clanCastleId = clan.getCastleId();
-				if (clanCastleId == _castle_id) {
-					existDefenseClan = true;
-					break;
-				}
-			}
-			boolean isProclamation = false;
-			for (L1War war : L1World.getInstance().getWarList()) {
-				if (_castle_id == war.GetCastleId()) {
-					isProclamation = war.CheckClanInWar(pc.getClanname());
-					break;
-				}
-			}
+			boolean warIsActive = WarTimeController.getInstance().isNowWar(_castle_id);
+			L1Clan attackerClan = L1World.getInstance().getClan(pc.getClanname());
+			boolean isCastleOwner = (attackerClan != null && attackerClan.getCastleId() == _castle_id);
 
-			if (existDefenseClan == true && isProclamation == false) {
-			    if (elapsedTime <= 10 * 60 * 1000) { // 10 minutes in milliseconds
-			        return;
+			boolean isAtWar = false;
+			for (L1War war : L1World.getInstance().getWarList()) {
+			    if (war.GetCastleId() == _castle_id && war.CheckClanInWar(pc.getClanname())) {
+			        isAtWar = true;
+			        break;
 			    }
 			}
+
+			// Prevent attacking towers before 10 minutes unless a war is active
+			if (elapsedTime < 10 * 60 * 1000 && !isAtWar) {
+			    return;
+			}
+
+			// After 10 minutes or if war is active, only owner or war participants can attack
+			if (!(isCastleOwner || isAtWar)) {
+			    pc.sendPackets(new S_SystemMessage("You are not part of this siege."));
+			    return;
+			}
+			
+			// After 10 minutes, auto-assign owner clan to team 7 if not already assigned
+			if (elapsedTime >= 10 * 60 * 1000 && isCastleOwner) {
+			    boolean hasWar = false;
+
+			    for (L1War war : L1World.getInstance().getWarList()) {
+			        if (war.GetCastleId() == _castle_id) {
+			            hasWar = true;
+			            int teamId = war.getClanTeam(pc.getClanname());
+			            if (teamId == -1) {
+			                war.AddAttackClan(pc.getClanname()); // Assign team 7
+			            }
+			            break;
+			        }
+			    }
+
+			    if (!hasWar) {
+			        // 💥 Create a fake war object for this castle
+			    	new L1War().handleCommands(1, pc.getClanname(), pc.getClanname());
+			        System.out.println("[Siege] Created solo siege war for castleId=" + _castle_id);
+			    }
+			}
+
 
 			if (getCurrentHp() > 0 && !isDead()) {
 				int newHp = getCurrentHp() - damage;
@@ -256,11 +399,17 @@ public class L1TowerInstance extends L1NpcInstance {
 	                }
 	            }
 
-	            // Announce globally
+	         // Announce tower capture only to players in warzone
 	            String towerName = getHeineTowerName(towerId);
 	            String msg = towerName + " has been captured by " + playerClanName + "!";
-	            L1World.getInstance().broadcastServerMessage(msg);
-	         // Set Tower Owner and capture points
+
+	            for (L1PcInstance pc : L1World.getInstance().getAllPlayers()) {
+	                if (L1CastleLocation.checkInWarArea(_castle_id, pc)) {
+	                    pc.sendPackets(new S_SystemMessage(msg));
+	                }
+	            }
+
+	            // Set Tower Owner and capture points
 	            L1War war = null;
 	            for (L1War w : L1World.getInstance().getWarList()) {
 	                if (w.GetCastleId() == _castle_id) {
@@ -268,6 +417,7 @@ public class L1TowerInstance extends L1NpcInstance {
 	                    break;
 	                }
 	            }
+
 	            if (war == null) {
 	                return; // No active war, exit early
 	            }
@@ -321,7 +471,7 @@ public class L1TowerInstance extends L1NpcInstance {
 	            }
 	            spawnGlowNpcForTower(towerId, team, pc);
 
-	         // Wait 9.75 seconds, then respawn tower
+	         // Wait 9.75 seconds, then delete old tower and respawn a new one
 	            GeneralThreadPool.getInstance().schedule(() -> {
 	                for (L1Object l1object : L1World.getInstance().getObject()) {
 	                    if (l1object instanceof L1TowerInstance) {
@@ -330,16 +480,14 @@ public class L1TowerInstance extends L1NpcInstance {
 	                            oldTower.getY() == getTowerSpawnY(towerId) &&
 	                            oldTower.getMapId() == getTowerMapId(towerId)) {
 
-	                            int npcId = 81111; // Heine tower NPC
-	                            L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+	                            oldTower.deleteMe(); // 💥 Delete first
 
-	                            SpawnWarObject(l1npc, getTowerSpawnX(towerId), getTowerSpawnY(towerId), getTowerMapId(towerId));
-
-	                            // Schedule deleteMe() 1/4 second after this block (so total delay = 10 seconds)
-	                            // Makes the tower spawning in look a little less Jank
+	                            // ✅ Then spawn a new tower shortly after
 	                            GeneralThreadPool.getInstance().schedule(() -> {
-	                                oldTower.deleteMe();
-	                            }, 250);
+	                                int npcId = 81111;
+	                                L1Npc l1npc = NpcTable.getInstance().getTemplate(npcId);
+	                                SpawnWarObject(l1npc, getTowerSpawnX(towerId), getTowerSpawnY(towerId), getTowerMapId(towerId));
+	                            }, 250); // Let deletion finish before respawning
 	                        }
 	                    }
 	                }
@@ -373,7 +521,7 @@ public class L1TowerInstance extends L1NpcInstance {
 	}
 
 
-	private void SpawnWarObject(L1Npc npc, int x, int y, short mapId) {
+	public static void SpawnWarObject(L1Npc npc, int x, int y, short mapId) {
 	    try {
 	        L1NpcInstance tower = NpcTable.getInstance().newNpcInstance(npc.get_npcId());
 	        tower.setId(IdFactory.getInstance().nextId());
@@ -397,28 +545,28 @@ public class L1TowerInstance extends L1NpcInstance {
 	    return "Unknown Tower";
 	}
 
-	private int getHeineTowerIdAtLocation(int x, int y, short mapId) {
+	public int getHeineTowerIdAtLocation(int x, int y, short mapId) {
 	    if (x == 33524 && y == 33396 && mapId == 4) return 1;
 	    if (x == 33547 && y == 33398 && mapId == 4) return 2;
 	    if (x == 33497 && y == 33398 && mapId == 4) return 3;
 	    return -1;
 	}
 	
-	private static int getTowerSpawnX(int towerId) {
+	public static int getTowerSpawnX(int towerId) {
 	    if (towerId == 1) return 33524;
 	    if (towerId == 2) return 33547;
 	    if (towerId == 3) return 33497;
 	    return 0;
 	}
 
-	private static int getTowerSpawnY(int towerId) {
+	public static int getTowerSpawnY(int towerId) {
 	    if (towerId == 1) return 33396;
 	    if (towerId == 2) return 33398;
 	    if (towerId == 3) return 33398;
 	    return 0;
 	}
 
-	private static short getTowerMapId(int towerId) {
+	public static short getTowerMapId(int towerId) {
 	    return 4;
 	}
 
@@ -496,4 +644,9 @@ public class L1TowerInstance extends L1NpcInstance {
 				|| getNpcTemplate().get_npcId() == 81192 || getNpcTemplate()
 				.get_npcId() == 81193);
 	}
+	
+	public int getCastleId() {
+	    return _castle_id;
+	}
+
 }

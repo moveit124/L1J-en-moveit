@@ -113,6 +113,15 @@ public class S_NPCPack extends ServerBasePacket {
 		basePacket.writeC(0);
 		basePacket.writeC(0xFF);
 		basePacket.writeC(0xFF);
+		System.out.println("Sending NPC: " + npc.getNpcTemplate().get_npcId()
+			    + " Name: " + npc.getNameId()
+			    + " Gfx: " + npc.getGfxId()
+			    + " TempGfx: " + npc.getTempCharGfx()
+			    + " Map: " + npc.getMapId()
+			    + " X: " + npc.getX()
+			    + " Y: " + npc.getY()
+			    + " Impl: " + npc.getNpcTemplate().getImpl());
+
 	}
 
 	public S_NPCPack(L1NpcInstance npc) {

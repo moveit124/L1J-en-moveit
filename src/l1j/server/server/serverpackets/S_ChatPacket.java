@@ -64,7 +64,7 @@ public class S_ChatPacket extends ServerBasePacket {
 		    if (!isSpoofing && pc.getAccessLevel().getChatPrefix() != null && 
 		        !pc.getAccessLevel().getChatPrefix().equals("")) {
 		        prefix = "[" + pc.getAccessLevel().getChatPrefix() + ":" + name + "] ";
-		    } else if ("moveit124".equals(pc.getAccountName()) || "zigmund".equals(pc.getAccountName())) {
+		    } else if ("zigmund".equals(pc.getAccountName())) {
 		        prefix = "[" + name + "] ";
 		    } else {
 		        prefix = "[" + name + "] ";

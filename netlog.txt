@@ -1,0 +1,392 @@
+Jul 05, 2025 10:03:14 PM l1j.server.Server cleanupOldLogFiles
+INFO: Cleaning up log files older than 3 days...
+Jul 05, 2025 10:03:14 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: error0.log
+Jul 05, 2025 10:03:14 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: java0.log
+Jul 05, 2025 10:03:14 PM l1j.server.Server cleanupOldLogFiles
+INFO: Log cleanup complete. Removed 0 old log files.
+ [TID:1] Server.main INFO: Loaded logging configuration from: ./config/log.properties
+ [TID:1] Config.load INFO: Loading server configuration from: ./config/server.properties
+ [TID:1] Config.load INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadRatesConfig INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadAltConfig INFO: Loading AltSettings config.
+ [TID:1] Config.loadCharConfig INFO: Loading CharSettings config.
+ [TID:1] Config.loadPcCommandConfig INFO: Loading PcCommandSettings config.
+ [TID:1] Config.load INFO: All configuration files loaded successfully
+Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
+ [TID:1] L1DatabaseFactory.<init> INFO: Database connection test successful - Found 2059 NPC spawn records
+ [TID:1] Server.main INFO: Initializing PRODUCTION GameServer...
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO:                L1J-En Server Starting
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO: Thread Lock Detection running
+ [TID:1] GameServerThread.<init> INFO: === Server Rates ===
+ [TID:1] GameServerThread.<init> INFO: Experience: 22.0x
+ [TID:1] GameServerThread.<init> INFO: Adena/Items: 3.0x/2.3x
+ [TID:1] GameServerThread.<init> INFO: Party/Pet XP: 3.0x/22.0x
+ [TID:1] GameServerThread.<init> INFO: Lawful/Karma: 1.0x/1.0x
+ [TID:1] GameServerThread.<init> INFO: Enchant Chances - Weapon: 25% | Armor: 25% | Attr: 25%
+ [TID:1] GameServerThread.<init> INFO: === Server Settings ===
+ [TID:1] GameServerThread.<init> INFO: Max Players: 100 | Global Chat Level: 30 | PvP: On
+ [TID:1] GameServerThread.<init> INFO: InGame News: Enabled (Interval: 1min)
+ [TID:1] IdFactory.loadState INFO: IDFactory current max ID   = 329250021
+loading map ids...OK! 6ms
+loading maps...OK! 995ms
+ [TID:1] AccessLevelTable.fillAccessTable INFO: Access Levels: 4 Loaded
+ [TID:52] UBTable.loadTable INFO: UB List: 5 Loaded
+ [TID:1] CheckWarTime.loadCheckWarTimeFromDatabase INFO: CheckWarTime 8
+ [TID:60] RankingsController.run INFO: Rankings Updated. Runtime: 16ms
+ [TID:1] MapTimeController.loadMapTimers INFO: loading map timers...OK! 83ms
+ [TID:1] GMCommandsConfig.load INFO: Loaded 134 GM rooms and 0 item sets
+loading doors...OK! 274ms
+loading doors...OK! 123ms
+ [TID:1] MobGroupTable.loadMobGroup INFO: Mob Group Lists: 94 loaded.
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded mob: 11768 records
+loading mobs...OK! 695 ms
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded all mob: 44622 records
+ [TID:1] PolyTable.fillPolyTable INFO: Polymorphs List: 298 Loaded
+ [TID:1] DropTable.loadBossExceptions INFO: Loaded 109 boss npc_ids as adjustChance exceptions
+ [TID:1] WeaponSkillTable.fillWeaponSkillTable INFO: List of weapons skills: 21 Loaded
+ [TID:1] SprTable.loadSprAction INFO: SPR entries 3671 loaded.
+ [TID:1] ResolventTable.loadMapsFromDatabase INFO: resolvent 302
+ [TID:1] DropItemTable.loadMapsFromDatabase INFO: drop_item 76
+ [TID:1] NPCTalkDataTable.parseList INFO: NPC Action List: 1126 Loaded
+ [TID:1] UBSpawnTable.loadSpawnTable INFO: UB Spawn list: 1114 Loaded
+ [TID:1] L1MapLimiter.loadXml INFO: loading map limiter...OK! 8ms
+ [TID:1] NpcActionTable.load INFO: Loading NPCAction...
+ [TID:1] NpcActionTable.<init> INFO: Loading NPC action files from data/xml/NpcActions/...
+ [TID:1] NpcActionTable.<init> INFO: Loading default NPC actions from: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Scanning directory: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: ItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Quest.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: SingleItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Teleporter.xml
+ [TID:1] NpcActionTable.<init> INFO: Loaded 1146 actions and 0 talk actions
+ [TID:1] NpcActionTable.load INFO:       OK!     66ms
+ [TID:1] GameServer.initialize INFO: Loading castle data...
+ [TID:1] GameServer.initialize INFO: Loading shop data...
+ [TID:1] GameServer.initialize INFO: Loading boss cycles...
+ [TID:1] L1BossCycle.load INFO: Loading Boss Cycle...
+ [TID:1] L1BossCycle.load INFO:      OK!     34ms
+ [TID:1] GameServer.initialize INFO: Loading NPC spawns...
+ [TID:1] NpcSpawnTable.fillNpcSpawnTable INFO: Loaded 1954 NPC spawns (0 failed) for 2010 records
+ [TID:1] GameServer.initialize INFO: Loading treasure box data...
+ [TID:1] Announcecycle.readFromDiskmulti INFO: IngameNews Messages        = 3
+ [TID:1] Server.main INFO: Telnet server is currently disabled.
+ [TID:108] NetworkServer.run INFO: Starting networking
+ [TID:1] Server.main INFO: PRODUCTION SERVER is running on port 2000
+Jul 05, 2025 10:03:29 PM l1j.server.Server cleanupOldLogFiles
+INFO: Cleaning up log files older than 3 days...
+Jul 05, 2025 10:03:29 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: error0.log
+Jul 05, 2025 10:03:29 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: java0.log
+Jul 05, 2025 10:03:29 PM l1j.server.Server cleanupOldLogFiles
+INFO: Log cleanup complete. Removed 0 old log files.
+ [TID:1] Server.main INFO: Loaded logging configuration from: ./config/log.properties
+ [TID:1] Config.load INFO: Loading server configuration from: ./config/server.properties
+ [TID:1] Config.load INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadRatesConfig INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadAltConfig INFO: Loading AltSettings config.
+ [TID:1] Config.loadCharConfig INFO: Loading CharSettings config.
+ [TID:1] Config.loadPcCommandConfig INFO: Loading PcCommandSettings config.
+ [TID:1] Config.load INFO: All configuration files loaded successfully
+Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
+ [TID:1] L1DatabaseFactory.<init> INFO: Database connection test successful - Found 2059 NPC spawn records
+ [TID:1] Server.main INFO: Initializing PRODUCTION GameServer...
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO:                L1J-En Server Starting
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO: Thread Lock Detection running
+ [TID:1] GameServerThread.<init> INFO: === Server Rates ===
+ [TID:1] GameServerThread.<init> INFO: Experience: 22.0x
+ [TID:1] GameServerThread.<init> INFO: Adena/Items: 3.0x/2.3x
+ [TID:1] GameServerThread.<init> INFO: Party/Pet XP: 3.0x/22.0x
+ [TID:1] GameServerThread.<init> INFO: Lawful/Karma: 1.0x/1.0x
+ [TID:1] GameServerThread.<init> INFO: Enchant Chances - Weapon: 25% | Armor: 25% | Attr: 25%
+ [TID:1] GameServerThread.<init> INFO: === Server Settings ===
+ [TID:1] GameServerThread.<init> INFO: Max Players: 100 | Global Chat Level: 30 | PvP: On
+ [TID:1] GameServerThread.<init> INFO: InGame News: Enabled (Interval: 1min)
+ [TID:1] IdFactory.loadState INFO: IDFactory current max ID   = 329250021
+loading map ids...OK! 6ms
+loading maps...OK! 985ms
+ [TID:1] AccessLevelTable.fillAccessTable INFO: Access Levels: 4 Loaded
+ [TID:52] UBTable.loadTable INFO: UB List: 5 Loaded
+ [TID:1] CheckWarTime.loadCheckWarTimeFromDatabase INFO: CheckWarTime 8
+ [TID:60] RankingsController.run INFO: Rankings Updated. Runtime: 16ms
+ [TID:1] MapTimeController.loadMapTimers INFO: loading map timers...OK! 81ms
+ [TID:1] GMCommandsConfig.load INFO: Loaded 134 GM rooms and 0 item sets
+loading doors...OK! 273ms
+loading doors...OK! 129ms
+ [TID:1] MobGroupTable.loadMobGroup INFO: Mob Group Lists: 94 loaded.
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded mob: 11768 records
+loading mobs...OK! 672 ms
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded all mob: 44622 records
+ [TID:1] PolyTable.fillPolyTable INFO: Polymorphs List: 298 Loaded
+ [TID:1] DropTable.loadBossExceptions INFO: Loaded 109 boss npc_ids as adjustChance exceptions
+ [TID:1] WeaponSkillTable.fillWeaponSkillTable INFO: List of weapons skills: 21 Loaded
+ [TID:1] SprTable.loadSprAction INFO: SPR entries 3671 loaded.
+ [TID:1] ResolventTable.loadMapsFromDatabase INFO: resolvent 302
+ [TID:1] DropItemTable.loadMapsFromDatabase INFO: drop_item 76
+ [TID:1] NPCTalkDataTable.parseList INFO: NPC Action List: 1126 Loaded
+ [TID:1] UBSpawnTable.loadSpawnTable INFO: UB Spawn list: 1114 Loaded
+ [TID:1] L1MapLimiter.loadXml INFO: loading map limiter...OK! 12ms
+ [TID:1] NpcActionTable.load INFO: Loading NPCAction...
+ [TID:1] NpcActionTable.<init> INFO: Loading NPC action files from data/xml/NpcActions/...
+ [TID:1] NpcActionTable.<init> INFO: Loading default NPC actions from: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Scanning directory: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: ItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Quest.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: SingleItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Teleporter.xml
+ [TID:1] NpcActionTable.<init> INFO: Loaded 1146 actions and 0 talk actions
+ [TID:1] NpcActionTable.load INFO:       OK!     70ms
+ [TID:1] GameServer.initialize INFO: Loading castle data...
+ [TID:1] GameServer.initialize INFO: Loading shop data...
+ [TID:1] GameServer.initialize INFO: Loading boss cycles...
+ [TID:1] L1BossCycle.load INFO: Loading Boss Cycle...
+ [TID:1] L1BossCycle.load INFO:      OK!     28ms
+ [TID:1] GameServer.initialize INFO: Loading NPC spawns...
+ [TID:1] NpcSpawnTable.fillNpcSpawnTable INFO: Loaded 1954 NPC spawns (0 failed) for 2010 records
+ [TID:1] GameServer.initialize INFO: Loading treasure box data...
+ [TID:1] Announcecycle.readFromDiskmulti INFO: IngameNews Messages        = 3
+ [TID:1] Server.main INFO: Telnet server is currently disabled.
+ [TID:97] NetworkServer.run INFO: Starting networking
+ [TID:1] Server.main INFO: PRODUCTION SERVER is running on port 2000
+Jul 05, 2025 10:05:05 PM l1j.server.Server cleanupOldLogFiles
+INFO: Cleaning up log files older than 3 days...
+Jul 05, 2025 10:05:05 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: error0.log
+Jul 05, 2025 10:05:05 PM l1j.server.Server lambda$2
+INFO: Deleted old log file: java0.log
+Jul 05, 2025 10:05:05 PM l1j.server.Server cleanupOldLogFiles
+INFO: Log cleanup complete. Removed 0 old log files.
+ [TID:1] Server.main INFO: Loaded logging configuration from: ./config/log.properties
+ [TID:1] Config.load INFO: Loading server configuration from: ./config/server.properties
+ [TID:1] Config.load INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadRatesConfig INFO: Loading rates configuration from: ./config/rates.properties
+ [TID:1] Config.loadAltConfig INFO: Loading AltSettings config.
+ [TID:1] Config.loadCharConfig INFO: Loading CharSettings config.
+ [TID:1] Config.loadPcCommandConfig INFO: Loading PcCommandSettings config.
+ [TID:1] Config.load INFO: All configuration files loaded successfully
+Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
+ [TID:1] L1DatabaseFactory.<init> INFO: Database connection test successful - Found 2059 NPC spawn records
+ [TID:1] Server.main INFO: Initializing PRODUCTION GameServer...
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO:                L1J-En Server Starting
+ [TID:1] GameServer.initialize INFO: =================================================
+ [TID:1] GameServer.initialize INFO: Thread Lock Detection running
+ [TID:1] GameServerThread.<init> INFO: === Server Rates ===
+ [TID:1] GameServerThread.<init> INFO: Experience: 22.0x
+ [TID:1] GameServerThread.<init> INFO: Adena/Items: 3.0x/2.3x
+ [TID:1] GameServerThread.<init> INFO: Party/Pet XP: 3.0x/22.0x
+ [TID:1] GameServerThread.<init> INFO: Lawful/Karma: 1.0x/1.0x
+ [TID:1] GameServerThread.<init> INFO: Enchant Chances - Weapon: 25% | Armor: 25% | Attr: 25%
+ [TID:1] GameServerThread.<init> INFO: === Server Settings ===
+ [TID:1] GameServerThread.<init> INFO: Max Players: 100 | Global Chat Level: 30 | PvP: On
+ [TID:1] GameServerThread.<init> INFO: InGame News: Enabled (Interval: 1min)
+ [TID:1] IdFactory.loadState INFO: IDFactory current max ID   = 329250021
+loading map ids...OK! 5ms
+loading maps...OK! 1020ms
+ [TID:1] AccessLevelTable.fillAccessTable INFO: Access Levels: 4 Loaded
+ [TID:52] UBTable.loadTable INFO: UB List: 5 Loaded
+ [TID:1] CheckWarTime.loadCheckWarTimeFromDatabase INFO: CheckWarTime 8
+ [TID:60] RankingsController.run INFO: Rankings Updated. Runtime: 17ms
+ [TID:1] MapTimeController.loadMapTimers INFO: loading map timers...OK! 90ms
+ [TID:1] GMCommandsConfig.load INFO: Loaded 134 GM rooms and 0 item sets
+loading doors...OK! 278ms
+loading doors...OK! 126ms
+ [TID:1] MobGroupTable.loadMobGroup INFO: Mob Group Lists: 94 loaded.
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded mob: 11768 records
+loading mobs...OK! 611 ms
+ [TID:1] SpawnTable.fillSpawnTable INFO: loaded all mob: 44622 records
+ [TID:1] PolyTable.fillPolyTable INFO: Polymorphs List: 298 Loaded
+ [TID:1] DropTable.loadBossExceptions INFO: Loaded 109 boss npc_ids as adjustChance exceptions
+ [TID:1] WeaponSkillTable.fillWeaponSkillTable INFO: List of weapons skills: 21 Loaded
+ [TID:1] SprTable.loadSprAction INFO: SPR entries 3671 loaded.
+ [TID:1] ResolventTable.loadMapsFromDatabase INFO: resolvent 302
+ [TID:1] DropItemTable.loadMapsFromDatabase INFO: drop_item 76
+ [TID:1] NPCTalkDataTable.parseList INFO: NPC Action List: 1126 Loaded
+ [TID:1] UBSpawnTable.loadSpawnTable INFO: UB Spawn list: 1114 Loaded
+ [TID:1] L1MapLimiter.loadXml INFO: loading map limiter...OK! 9ms
+ [TID:1] NpcActionTable.load INFO: Loading NPCAction...
+ [TID:1] NpcActionTable.<init> INFO: Loading NPC action files from data/xml/NpcActions/...
+ [TID:1] NpcActionTable.<init> INFO: Loading default NPC actions from: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Scanning directory: C:\Users\moveit124\git\SanctuaryOfAden\.\data\xml\NpcActions
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: ItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Quest.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: SingleItemMaking.xml
+ [TID:1] NpcActionTable.loadDirectoryActions INFO: Processing file: Teleporter.xml
+ [TID:1] NpcActionTable.<init> INFO: Loaded 1146 actions and 0 talk actions
+ [TID:1] NpcActionTable.load INFO:       OK!     65ms
+ [TID:1] GameServer.initialize INFO: Loading castle data...
+ [TID:1] GameServer.initialize INFO: Loading shop data...
+ [TID:1] GameServer.initialize INFO: Loading boss cycles...
+ [TID:1] L1BossCycle.load INFO: Loading Boss Cycle...
+ [TID:1] L1BossCycle.load INFO:      OK!     26ms
+ [TID:1] GameServer.initialize INFO: Loading NPC spawns...
+ [TID:1] NpcSpawnTable.fillNpcSpawnTable INFO: Loaded 1954 NPC spawns (0 failed) for 2010 records
+ [TID:1] GameServer.initialize INFO: Loading treasure box data...
+ [TID:1] Announcecycle.readFromDiskmulti INFO: IngameNews Messages        = 3
+ [TID:1] Server.main INFO: Telnet server is currently disabled.
+ [TID:91] NetworkServer.run INFO: Starting networking
+ [TID:1] Server.main INFO: PRODUCTION SERVER is running on port 2000
+ [TID:106] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:182 MB RAM, CurrentThreads=28, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52246, WarList Array Size: 0, Clans Array Size: 4
+ [TID:106] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 184MB RAM CurrentThreads=28 CharactersOnline=0
+ [TID:107] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:186 MB RAM, CurrentThreads=28, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52248, WarList Array Size: 0, Clans Array Size: 4
+Captured Packet Opcode: 127 - Full Packet: [127, 52, 0, -28, 4, 0, 0, 0, -32, 10, -58, 11, -3, -36, -58, 0]
+ [TID:94] Client.run SEVERE: Longest processing time reached
+ [TID:94] Client.run SEVERE: Opcode: 127
+ [TID:94] Client.run SEVERE: Elapse: 1
+Captured Packet Opcode: 57 - Full Packet: [57, 77, 111, 118, 101, 105, 116, 49, 50, 52, 0, 112, 101, 114, 115, 111, 110, 0, 127, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0]
+ [TID:96] Account.load INFO: Account already exists.
+ [TID:96] Account.updateLastActive INFO: Update lastactive for: moveit124
+ [TID:96] C_AuthLogin.<init> INFO: Account login: account=moveit124 host=127.0.0.1 Current Memory: 188MB RAM
+ [TID:96] Client.run SEVERE: Longest processing time reached
+ [TID:96] Client.run SEVERE: Opcode: 57
+ [TID:96] Client.run SEVERE: Elapse: 5
+Captured Packet Opcode: 53 - Full Packet: [53, 0, 0, 0]
+ [TID:99] Account.load INFO: Account already exists.
+Captured Packet Opcode: 131 - Full Packet: [-125, 83, 112, 105, 100, 101, 114, 109, 97, 110, 0, 69]
+ [TID:99] GMCommands.executeDatabaseCommand INFO: Spiderman ran invis 
+ [TID:99] GMCommands.executeDatabaseCommand INFO: Spiderman ran invul 
+ [TID:99] C_LoginToServer.<init> INFO: Character login: char=Spiderman account=moveit124 host=127.0.0.1 Current Memory: 192MB RAM CharactersOnline=1
+ [TID:99] Client.run SEVERE: Longest processing time reached
+ [TID:99] Client.run SEVERE: Character: Spiderman
+ [TID:99] Client.run SEVERE: Opcode: 131
+ [TID:99] Client.run SEVERE: Elapse: 62
+ [TID:100] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:100] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:100] Client.sendPacket INFO: Packet Length: 0
+ [TID:100] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:100] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:100] Client.sendPacket INFO: Packet Length: 0
+ [TID:100] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:100] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:100] Client.sendPacket INFO: Packet Length: 0
+Captured Packet Opcode: 182 - Full Packet: [-74, 0, 0, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, -32]
+ [TID:107] Client.handleDisconnect INFO: Client thread ended: moveit124:127.0.0.1 Current Memory: 209MB RAM CurrentThreads=28 CharactersOnline=1
+Flushing to DB. Pot score: 0, Esc score: 0
+ [TID:115] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:222 MB RAM, CurrentThreads=28, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52280, WarList Array Size: 0, Clans Array Size: 4
+ [TID:115] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 224MB RAM CurrentThreads=28 CharactersOnline=0
+ [TID:116] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:229 MB RAM, CurrentThreads=24, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52282, WarList Array Size: 0, Clans Array Size: 4
+Captured Packet Opcode: 127 - Full Packet: [127, 52, 0, -28, 4, 0, 0, 0, 106, 22, -13, 97, -3, -36, -58, 0]
+Captured Packet Opcode: 57 - Full Packet: [57, 77, 111, 118, 101, 105, 116, 49, 50, 52, 0, 112, 101, 114, 115, 111, 110, 0, 127, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0]
+ [TID:96] Account.load INFO: Account already exists.
+ [TID:96] Account.updateLastActive INFO: Update lastactive for: moveit124
+ [TID:96] C_AuthLogin.<init> INFO: Account login: account=moveit124 host=127.0.0.1 Current Memory: 232MB RAM
+ [TID:96] Client.run SEVERE: Longest processing time reached
+ [TID:96] Client.run SEVERE: Opcode: 57
+ [TID:96] Client.run SEVERE: Elapse: 2
+Captured Packet Opcode: 53 - Full Packet: [53, 0, 0, 0]
+ [TID:102] Account.load INFO: Account already exists.
+ [TID:102] Client.run SEVERE: Longest processing time reached
+ [TID:102] Client.run SEVERE: Opcode: 53
+ [TID:102] Client.run SEVERE: Elapse: 3
+Captured Packet Opcode: 131 - Full Packet: [-125, 83, 112, 105, 100, 101, 114, 109, 97, 110, 0, 68]
+ [TID:102] GMCommands.executeDatabaseCommand INFO: Spiderman ran invis 
+ [TID:102] GMCommands.executeDatabaseCommand INFO: Spiderman ran invul 
+ [TID:102] C_LoginToServer.<init> INFO: Character login: char=Spiderman account=moveit124 host=127.0.0.1 Current Memory: 232MB RAM CharactersOnline=1
+ [TID:102] Client.run SEVERE: Longest processing time reached
+ [TID:102] Client.run SEVERE: Character: Spiderman
+ [TID:102] Client.run SEVERE: Opcode: 131
+ [TID:102] Client.run SEVERE: Elapse: 12
+ [TID:102] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:102] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:102] Client.sendPacket INFO: Packet Length: 0
+ [TID:102] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:102] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:102] Client.sendPacket INFO: Packet Length: 0
+ [TID:102] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:102] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:102] Client.sendPacket INFO: Packet Length: 0
+Captured Packet Opcode: 182 - Full Packet: [-74, 0, 0, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, -32]
+ [TID:116] Client.handleDisconnect INFO: Client thread ended: moveit124:127.0.0.1 Current Memory: 233MB RAM CurrentThreads=24 CharactersOnline=1
+Flushing to DB. Pot score: 0, Esc score: 0
+ [TID:117] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:239 MB RAM, CurrentThreads=24, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52290, WarList Array Size: 0, Clans Array Size: 4
+ [TID:117] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 239MB RAM CurrentThreads=24 CharactersOnline=0
+ [TID:118] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:240 MB RAM, CurrentThreads=24, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52292, WarList Array Size: 0, Clans Array Size: 4
+Captured Packet Opcode: 127 - Full Packet: [127, 52, 0, -28, 4, 0, 0, 0, -118, 16, -90, 126, -3, -36, -58, 0]
+Captured Packet Opcode: 57 - Full Packet: [57, 77, 111, 118, 101, 105, 116, 49, 50, 52, 0, 112, 101, 114, 115, 111, 110, 0, 127, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0]
+ [TID:98] Account.load INFO: Account already exists.
+ [TID:98] Account.updateLastActive INFO: Update lastactive for: moveit124
+ [TID:98] C_AuthLogin.<init> INFO: Account login: account=moveit124 host=127.0.0.1 Current Memory: 240MB RAM
+ [TID:98] Client.run SEVERE: Longest processing time reached
+ [TID:98] Client.run SEVERE: Opcode: 57
+ [TID:98] Client.run SEVERE: Elapse: 3
+Captured Packet Opcode: 53 - Full Packet: [53, 0, 0, 0]
+ [TID:95] Account.load INFO: Account already exists.
+Captured Packet Opcode: 131 - Full Packet: [-125, 83, 112, 105, 100, 101, 114, 109, 97, 110, 0, 0]
+ [TID:95] GMCommands.executeDatabaseCommand INFO: Spiderman ran invis 
+ [TID:95] GMCommands.executeDatabaseCommand INFO: Spiderman ran invul 
+ [TID:95] C_LoginToServer.<init> INFO: Character login: char=Spiderman account=moveit124 host=127.0.0.1 Current Memory: 241MB RAM CharactersOnline=1
+ [TID:95] Client.run SEVERE: Longest processing time reached
+ [TID:95] Client.run SEVERE: Character: Spiderman
+ [TID:95] Client.run SEVERE: Opcode: 131
+ [TID:95] Client.run SEVERE: Elapse: 12
+ [TID:95] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:95] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:95] Client.sendPacket INFO: Packet Length: 0
+ [TID:95] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:95] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:95] Client.sendPacket INFO: Packet Length: 0
+ [TID:95] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:95] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:95] Client.sendPacket INFO: Packet Length: 0
+Captured Packet Opcode: 182 - Full Packet: [-74, 0, 0, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, -32]
+ [TID:118] Client.handleDisconnect INFO: Client thread ended: moveit124:127.0.0.1 Current Memory: 243MB RAM CurrentThreads=24 CharactersOnline=1
+Flushing to DB. Pot score: 0, Esc score: 0
+ [TID:119] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:245 MB RAM, CurrentThreads=24, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52314, WarList Array Size: 0, Clans Array Size: 4
+ [TID:119] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 245MB RAM CurrentThreads=24 CharactersOnline=0
+ [TID:120] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:245 MB RAM, CurrentThreads=11, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52314, WarList Array Size: 0, Clans Array Size: 4
+ [TID:120] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 245MB RAM CurrentThreads=11 CharactersOnline=0
+ [TID:121] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:246 MB RAM, CurrentThreads=11, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52315, WarList Array Size: 0, Clans Array Size: 4
+Captured Packet Opcode: 127 - Full Packet: [127, 52, 0, -28, 4, 0, 0, 0, -79, -90, 79, -44, -3, -36, -58, 0]
+Captured Packet Opcode: 57 - Full Packet: [57, 77, 111, 118, 101, 105, 116, 49, 50, 52, 0, 112, 101, 114, 115, 111, 110, 0, 127, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0]
+ [TID:95] Account.load INFO: Account already exists.
+ [TID:95] Account.updateLastActive INFO: Update lastactive for: moveit124
+ [TID:95] C_AuthLogin.<init> INFO: Account login: account=moveit124 host=127.0.0.1 Current Memory: 246MB RAM
+ [TID:95] Client.run SEVERE: Longest processing time reached
+ [TID:95] Client.run SEVERE: Opcode: 57
+ [TID:95] Client.run SEVERE: Elapse: 2
+Captured Packet Opcode: 53 - Full Packet: [53, 0, -13, 4]
+ [TID:93] Account.load INFO: Account already exists.
+ [TID:93] Client.run SEVERE: Longest processing time reached
+ [TID:93] Client.run SEVERE: Opcode: 53
+ [TID:93] Client.run SEVERE: Elapse: 3
+Captured Packet Opcode: 131 - Full Packet: [-125, 83, 112, 105, 100, 101, 114, 109, 97, 110, 0, 55]
+ [TID:93] GMCommands.executeDatabaseCommand INFO: Spiderman ran invis 
+ [TID:93] GMCommands.executeDatabaseCommand INFO: Spiderman ran invul 
+ [TID:93] C_LoginToServer.<init> INFO: Character login: char=Spiderman account=moveit124 host=127.0.0.1 Current Memory: 246MB RAM CharactersOnline=1
+ [TID:93] Client.run SEVERE: Longest processing time reached
+ [TID:93] Client.run SEVERE: Character: Spiderman
+ [TID:93] Client.run SEVERE: Opcode: 131
+ [TID:93] Client.run SEVERE: Elapse: 12
+ [TID:93] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:93] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:93] Client.sendPacket INFO: Packet Length: 0
+ [TID:93] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:93] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:93] Client.sendPacket INFO: Packet Length: 0
+ [TID:93] Client.sendPacket INFO: Something tried to send a bad/empty packet
+ [TID:93] Client.sendPacket INFO: Packet type: l1j.server.server.serverpackets.S_Mail
+ [TID:93] Client.sendPacket INFO: Packet Length: 0
+Captured Packet Opcode: 182 - Full Packet: [-74, 0, 0, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, 0]
+Captured Packet Opcode: 41 - Full Packet: [41, 13, 1, -32]
+ [TID:121] Client.handleDisconnect INFO: Client thread ended: moveit124:127.0.0.1 Current Memory: 254MB RAM CurrentThreads=24 CharactersOnline=1
+Flushing to DB. Pot score: 0, Esc score: 0
+ [TID:136] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:258 MB RAM, CurrentThreads=11, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52403, WarList Array Size: 0, Clans Array Size: 4
+ [TID:136] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 258MB RAM CurrentThreads=11 CharactersOnline=0
+ [TID:137] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:259 MB RAM, CurrentThreads=11, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52403, WarList Array Size: 0, Clans Array Size: 4
+ [TID:137] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 259MB RAM CurrentThreads=11 CharactersOnline=0
+ [TID:138] Client.<init> INFO: (127.0.0.1) Login detected. Current memory:259 MB RAM, CurrentThreads=11, Players Array Size: 0, Pets Array Size: 0, Summons Array Size: 0, All Objects Array Size: 52404, WarList Array Size: 0, Clans Array Size: 4
+Captured Packet Opcode: 127 - Full Packet: [127, 52, 0, -28, 4, 0, 0, 0, -39, -65, -18, 97, -3, -36, -58, 0]
+ [TID:138] Client.handleDisconnect INFO: Client thread ended: null:127.0.0.1 Current Memory: 259MB RAM CurrentThreads=11 CharactersOnline=0

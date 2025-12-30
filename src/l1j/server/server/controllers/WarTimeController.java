@@ -189,8 +189,6 @@ public class WarTimeController implements Runnable {
 				}
 			} else if (_war_end_time[i].before(getRealTime())) {
 				if (_is_now_war[i] == true) {
-					//clear the players in the castle before the war ends
-					clearCastle(castleId);
 					_is_now_war[i] = false;
 					L1World.getInstance().broadcastPacketToAll(
 							new S_PacketBox(S_PacketBox.MSG_WAR_END, castleId));

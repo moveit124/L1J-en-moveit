@@ -69,6 +69,7 @@ import l1j.server.server.serverpackets.S_DoActionGFX;
 import l1j.server.server.serverpackets.S_Light;
 import l1j.server.server.serverpackets.S_MoveCharPacket;
 import l1j.server.server.serverpackets.S_NPCPack;
+import l1j.server.server.serverpackets.S_NpcChatPacket;
 import l1j.server.server.serverpackets.S_RemoveObject;
 import l1j.server.server.serverpackets.S_SkillHaste;
 import l1j.server.server.serverpackets.S_SkillSound;
@@ -92,6 +93,16 @@ public class L1NpcInstance extends L1Character {
 	public static final int CHAT_TIMING_DEAD = 1;
 	public static final int CHAT_TIMING_HIDE = 2;
 	public static final int CHAT_TIMING_GAME_TIME = 3;
+	
+	private boolean _hasYelledBKLM = false;
+
+	public boolean hasYelledBKLM() {
+		return _hasYelledBKLM;
+	}
+
+	public void setYelledBKLM(boolean value) {
+		_hasYelledBKLM = value;
+	}
 
 	static Logger _log = LoggerFactory.getLogger(L1NpcInstance.class.getName());
 	private L1Npc _npcTemplate;
@@ -560,7 +571,64 @@ public class L1NpcInstance extends L1Character {
 			attack.calcDamage();
 			attack.addPcPoisonAttack(target, this);
 		}
-
+		// Protestor logic #BKLMFourthOfJulyEvent
+		if (getNpcId() == 101007 && !this.hasYelledBKLM()) {
+			if (ThreadLocalRandom.current().nextInt(100) < 25) { // 25% chance
+				String[] phrases = {
+						"Black Knight Lives Matter!",
+						"Respawn the BKs, mages need food too!",
+						"We demand spawn equality!",
+						"Don’t silence the Black Knights!",
+						"BK farming is a human right!",
+						"Every nerf is violence!",
+						"Mages united will never be poor!",
+						"Bring back the grind!",
+						"You nerfed our profits!",
+						"Black Knights made this economy!",
+						"Spellbooks dont buy themselves, we need BKs!",
+						"How do you expect us to live off Slimes?",
+						"A world without BKs is a world without hope!",
+						"Black Knights were essential workers!",
+						"Without BKs, there is no enchantment!",
+						"Bring balance, bring back the Knights!",
+						"This patch is a hate crime against mages!",
+						"Silence is complicit, speak up for spawns!",
+						"First they came for the BKs... and we said nothing.",
+				};
+				String msg = phrases[ThreadLocalRandom.current().nextInt(phrases.length)];
+				this.broadcastPacket(new S_NpcChatPacket(this, msg, 0));
+			}
+			this.setYelledBKLM(true);
+		}
+		//Black Knight Captain logic #BKLMFourthOfJulyEvent
+		if (getNpcId() == 101008 && !this.hasYelledBKLM()) {
+			if (ThreadLocalRandom.current().nextInt(100) < 25) { // 25% chance
+				String[] phrases = {
+						"We ran this land once. Now we run from it.",
+						"You think killin us makes you strong? Try wearing our armor.",
+						"This used to be our turf... before the fireballs came.",
+						"Mage fire took my brothers. You’ll pay for that.",
+						"Dark Elves, Mages, Heroes, doesn’t matter. You all turned on us.",
+						"So this is what honor looks like? Farming a dying clan?",
+						"We didnt vanish. We were erased.",
+						"Every brother you kill makes the rest of us meaner.",
+						"You think were just drops now? Youre already dead.",
+						"We never bowed to kings, were sure as hell not bowin to mages.",
+						"You loot us like were junk... but your fear says otherwise.",
+						"You nerfed our spawns. Not our rage.",
+						"They call it balance, we call it genocide.",
+						"Forced into hiding, forgotten by Aden.",
+						"We stood against darkness... now you ARE the darkness.",
+						"You burned our spawns... but we remember.",
+						"Polymorphed cowards, face us with your true form!",
+						"The BK war didn’t end, you just stopped counting the bodies.",
+						"If I had ten more like me, you'd be on the ground already."
+				};
+				String msg = phrases[ThreadLocalRandom.current().nextInt(phrases.length)];
+				this.broadcastPacket(new S_NpcChatPacket(this, msg, 0));
+			}
+			this.setYelledBKLM(true);
+		}
 		attack.action();
 		attack.commit();
 

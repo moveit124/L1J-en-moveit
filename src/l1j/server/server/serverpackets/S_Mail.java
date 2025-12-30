@@ -35,22 +35,21 @@ public class S_Mail extends ServerBasePacket {
 	public S_Mail(L1PcInstance pc, int type) {
 		ArrayList<L1Mail> mails = new ArrayList<L1Mail>();
 		for (L1Mail mail : MailTable.getAllMail()) {
-			if (mail.getInBoxId() == pc.getId()) {
-				if (mail.getType() == type) {
-					mails.add(mail);
-				}
+			if (mail.getInBoxId() == pc.getId() && mail.getType() == type) {
+				mails.add(mail);
 			}
 		}
+
 		if (mails.isEmpty()) {
+			_byte = null; // Explicitly mark this packet as invalid
 			return;
 		}
 
 		writeC(Opcodes.S_OPCODE_MAIL);
 		writeC(type);
 		writeH(mails.size());
-		
-		for (int i = 0; i < mails.size(); i++) {
-			L1Mail mail = mails.get(i);
+
+		for (L1Mail mail : mails) {
 			writeD(mail.getId());
 			writeC(mail.getReadStatus());
 			writeD((int) (mail.getDate().getTime() / 1000));
@@ -59,6 +58,7 @@ public class S_Mail extends ServerBasePacket {
 			writeBytes(mail.getSubject());
 		}
 	}
+
 /**
  * //Unable to send letter [Server] opcode = 48 0000: 30 20 00 45 54 fa 00 b5
  */	
@@ -85,7 +85,7 @@ public class S_Mail extends ServerBasePacket {
  * //Mail to the safe deposit box [Server] opcode = 48 0000: [30] [40] [2b 00 00 00] [01] 95
  * 
  */
-	public S_Mail(int mailId,int type) {
+	public S_Mail(int mailId, int type) {
 		// Delete letter
 		// 0x30: Delete general 0x31:Delete Blood Pledge 0x32:Generally stored in a safe deposit box 0x40:Delete the safe deposit box
 		if (type == 0x30 || type == 0x31 || type == 0x32 || type == 0x40) {
@@ -95,12 +95,15 @@ public class S_Mail extends ServerBasePacket {
 			writeC(1);
 			return;
 		}
+
 		L1Mail mail = MailTable.getMail(mailId);
 		if (mail != null) {
 			writeC(Opcodes.S_OPCODE_MAIL);
 			writeC(type);
 			writeD(mail.getId());
 			writeBytes(mail.getContent());
+		} else {
+			_byte = null; // Prevent sending if mail is missing
 		}
 	}
 
@@ -109,8 +112,10 @@ public class S_Mail extends ServerBasePacket {
 		if (_byte == null) {
 			_byte = getBytes();
 		}
-		return _byte;
+		return _byte != null ? _byte : new byte[0];
 	}
+
+
 
 	@Override
 	public String getType() {

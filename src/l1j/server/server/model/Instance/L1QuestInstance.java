@@ -56,7 +56,7 @@ public class L1QuestInstance extends L1NpcInstance {
 		L1Attack attack = new L1Attack(pc, this);
 		if (attack.calcHit()) {
 			attack.calcDamage();
-			attack.calcStaffOfMana();
+			attack.calcStaffOfMana(this);
 			attack.addPcPoisonAttack(pc, this);
 			attack.addChaserAttack();
 		}

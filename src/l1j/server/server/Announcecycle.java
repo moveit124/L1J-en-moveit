@@ -31,9 +31,15 @@ import org.slf4j.LoggerFactory;
 
 import javolution.util.FastList;
 import l1j.server.Config;
+import l1j.server.L1DatabaseFactory;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.serverpackets.S_SystemMessage;
+
+import java.sql.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+
 
 public class Announcecycle {
 	private static Logger _log = LoggerFactory.getLogger(Announcecycle.class.getName());
@@ -60,11 +66,18 @@ public class Announcecycle {
 		File file = new File("data/ingamenews.txt");
 		if (file.exists()) {
 			readFromDiskmulti(file);
+
+			// 🔥 Ensure siege message placeholder is always present
+			if (_ingamenews.stream().noneMatch(msg -> msg.startsWith("Next Castle Siege:"))) {
+				_ingamenews.add("Next Castle Siege: placeholder");
+			}
+
 			doAnnouncecycle();
 		} else {
 			_log.info("data/ingamenews.txt loaded.");
 		}
 	}
+
 
 	private void readFromDiskmulti(File file) {
 		LineNumberReader lnr = null;
@@ -106,8 +119,18 @@ public class Announcecycle {
 				if (_ingamenews == null || _ingamenews.isEmpty()) {
 					return; // Avoid IndexOutOfBoundsException if the list is empty
 				}
-				ShowAnnounceToAll(_ingamenews.get(_ingamenewssize));
+
+				// No more inserting the siege message here
+				// That was causing stale data
+
+				String msg = _ingamenews.get(_ingamenewssize);
+				if (msg.startsWith("Next Castle Siege:")) {
+					msg = getNextSiegeAnnouncement(); // Always fresh when sent
+				}
+				ShowAnnounceToAll(msg);
+
 				_ingamenewssize++;
+
 				if (_ingamenewssize >= _ingamenews.size()) {
 					_ingamenewssize = 0;
 				}
@@ -117,9 +140,35 @@ public class Announcecycle {
 		}
 	}
 
+
 	private void ShowAnnounceToAll(String msg) {
 		Collection<L1PcInstance> allpc = L1World.getInstance().getAllPlayers();
-		for (L1PcInstance pc : allpc)
+		for (L1PcInstance pc : allpc) {
 			pc.sendPackets(new S_SystemMessage(msg));
+		}
 	}
+
+	
+	private String getNextSiegeAnnouncement() {
+		String announcement = "Next Castle Siege time unavailable.";
+		try (Connection con = L1DatabaseFactory.getInstance().getConnection();
+		     PreparedStatement ps = con.prepareStatement("SELECT war_time FROM castle WHERE castle_id = 5");
+		     ResultSet rs = ps.executeQuery()) {
+
+			if (rs.next()) {
+				Timestamp warTime = rs.getTimestamp("war_time");
+				if (warTime != null) {
+					// Manually subtract 4 hours (assuming DB time is UTC)
+					LocalDateTime localTime = warTime.toLocalDateTime().minusHours(4);
+
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE MMM d 'at' h:mm a") ;
+					announcement = "Next Castle Siege: " + localTime.format(formatter) + " EDT";
+				}
+			}
+		} catch (SQLException e) {
+			_log.warn("Failed to fetch siege time: " + e.getMessage());
+		}
+		return announcement;
+	}
+
 }

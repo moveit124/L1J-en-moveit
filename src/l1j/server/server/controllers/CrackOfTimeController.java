@@ -104,6 +104,7 @@ public class CrackOfTimeController extends TimerTask {
 					clear(); // Call clear method to handle despawning	
 					Thread.sleep(_downTime * 500); // Downtime in milliseconds	
 					L1World.getInstance().broadcastServerMessage("The Crack of Time is open. Let the assault begin.");	
+					setCrackOfTimeStatus(true);
 					spawnCrack(); // Spawn a new crack after downtime
 				} catch (InterruptedException e) {
 					_log.error("",e);
@@ -117,6 +118,7 @@ public class CrackOfTimeController extends TimerTask {
 			if (_startTime == _delayTime && _startupCrack) {
 				_startupCrack = false;
 				L1World.getInstance().broadcastServerMessage("The Crack of Time is open. Let the assault begin.");	
+				setCrackOfTimeStatus(true);
 				spawnCrack();
 			}
 			if (_startTime == (_delayTime + _upTime - _despawnMessageDelay) && !_isOver) {
@@ -147,6 +149,7 @@ public class CrackOfTimeController extends TimerTask {
 		_gatetime = 0;
 		_gateopen = false;
 		L1World.getInstance().broadcastServerMessage("The Crack of Time disappears.");	
+		setCrackOfTimeStatus(false);
 	}
 
 	private void spawnCrack() {
@@ -243,5 +246,15 @@ public class CrackOfTimeController extends TimerTask {
 				_log.error(e.getLocalizedMessage(), e);
 			}
 		}
+	}
+
+	public static boolean _crackOfTimeStatus = false;
+	
+	private void setCrackOfTimeStatus(boolean b) {
+		_crackOfTimeStatus = b;		
+	}
+	
+	public static boolean getCrackOfTimeStatus() {
+		return _crackOfTimeStatus;
 	}
 }

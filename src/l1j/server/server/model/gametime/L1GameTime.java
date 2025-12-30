@@ -26,7 +26,7 @@ import java.util.TimeZone;
 import l1j.server.server.utils.IntRange;
 
 public class L1GameTime {
-	private static final long BASE_TIME_IN_MILLIS_REAL = 1057233600000L;
+	private static final long BASE_TIME_IN_MILLIS_REAL = 1735689600000L;
 
 	private final long _time;
 

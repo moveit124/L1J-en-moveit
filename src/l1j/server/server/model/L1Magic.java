@@ -2,6 +2,8 @@ package l1j.server.server.model;
 
 import static l1j.server.server.model.skill.L1SkillId.AREA_OF_SILENCE;
 import static l1j.server.server.model.skill.L1SkillId.CANCELLATION;
+import static l1j.server.server.model.skill.L1SkillId.MIND_BREAK;
+import static l1j.server.server.model.skill.L1SkillId.CONFUSION;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_0_S;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_1_S;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_2_S;
@@ -304,9 +306,17 @@ public class L1Magic {
 			}
 		} else if (skillId == GUARD_BRAKE || skillId == RESIST_FEAR
 				|| skillId == HORROR_OF_DEATH) {
-			// As of an update on live early 2012, these skills aren't affected
-			// by MR.
-			probability = 100;
+			//The spell is based on INT,  MR and Level
+			//INT increases the chance up to 100% based on INT VS MR, 25 INT is 90% against all MR
+			//Level removes 5% per level difference up to a maximum of 50%
+			double base = (_attacker.getInt() * 6.91) + 16.26;
+			double effectiveMr = Math.min(_target.getMr(), 100); // Cap MR
+			double chance = base - effectiveMr;
+			chance = Math.max(0, Math.min(100, chance));
+			int levelPenalty = Math.min(50, levelDifference * 5);
+			chance = Math.max(0, chance - levelPenalty);
+
+			probability = (int) chance;
 		} else if (skillId == THUNDER_GRAB) {
 			// success rate is probability_value(50%) * (attackerlvl/
 			// defenselvl) + random(0-20)
@@ -395,10 +405,14 @@ public class L1Magic {
 			damage = calcNpcMagicDamage(skillId);
 		}
 		damage = skillId == JOY_OF_PAIN ? damage : calcMrDefense(damage);
+
+		damage = calcExceptionMagicDamage(skillId, damage);
 		if (_calcType == PC_NPC && _pc.getDmgMessages()) {
 			_pc.sendPackets(new S_SystemMessage(L1NamedSkill.getName(skillId)
 					+ " Dealt:" + String.valueOf(damage)));
 		}
+		
+		
 		return damage;
 	}
 
@@ -859,5 +873,70 @@ public class L1Magic {
 		} else if (_calcType == NPC_NPC) {
 			_targetNpc.receiveDamage(_npc, damage);
 		}
+	}
+	
+	private int getSpellPower() {
+		int spellPower = 0;
+		if (_calcType == PC_PC || _calcType == PC_NPC) {
+			spellPower = _pc.getSp();
+			// 魔眼によるSP上昇
+			/*if (_pc.hasSkillEffect(MAGIC_EYE_OF_LINDVIOR)
+						|| _pc.hasSkillEffect(MAGIC_EYE_OF_SHAPE)
+						|| _pc.hasSkillEffect(MAGIC_EYE_OF_LIFE)) {
+				int chance = _random.nextInt(100) + 1;
+				if (chance <= 10) {
+					spellPower += 2;
+				}
+			}*/
+		} else if (_calcType == NPC_PC || _calcType == NPC_NPC) {
+			spellPower = _npc.getSp();
+			// 魔眼によるSP上昇
+			/*if (_npc.hasSkillEffect(MAGIC_EYE_OF_LINDVIOR)
+						|| _npc.hasSkillEffect(MAGIC_EYE_OF_SHAPE)
+						|| _npc.hasSkillEffect(MAGIC_EYE_OF_LIFE)) {
+				int chance = _random.nextInt(100) + 1;
+				if (chance <= 10) {
+					spellPower += 2;
+				}
+			}*/
+		}
+		return spellPower;
+	}
+	
+	private int calcExceptionMagicDamage(int skillId, int dmg) {
+
+		L1Skill l1skills = SkillTable.getInstance().findBySkillId(skillId);
+		if (skillId == MIND_BREAK) {
+		    // Calculate magic reduction from MR
+		    int mr = Math.min(_target.getMr(), 150);
+		    double reduction = 1.0 - ((mr - 30) / 240.0);
+		    reduction = Math.max(0.5, reduction); // minimum 50% damage
+
+		    // Base damage formula
+		    double intScaling = _pc.getInt() * 3.8;
+		    double baseDmg = intScaling * (0.75 + ThreadLocalRandom.current().nextDouble() * 0.25);
+		    double finalDmg = baseDmg * reduction;
+
+		    // Apply MP drain
+		    int mpToDrain = (int) (finalDmg / 5);
+		    mpToDrain = Math.min(mpToDrain, _target.getCurrentMp());
+
+		    if (mpToDrain > 0) {
+		    	_target.setCurrentMp(_target.getCurrentMp() - mpToDrain);
+		        _pc.setCurrentMp(_pc.getCurrentMp() + mpToDrain);
+		    }
+
+		    // Set the spell damage for processing
+		    dmg = (int) finalDmg;
+		}  else if (skillId == CONFUSION) {
+			// コンフュージョン sp * value
+			int sp = getSpellPower();
+			dmg = (int) (l1skills.getDamageValue() * sp);
+		} else if (skillId == JOY_OF_PAIN) {
+			// ジョイオブペイン (MaxHp-currentHp)/5
+			dmg = ((_pc.getMaxHp() - _pc.getCurrentHp()) / 5);
+		}
+
+		return dmg;
 	}
 }

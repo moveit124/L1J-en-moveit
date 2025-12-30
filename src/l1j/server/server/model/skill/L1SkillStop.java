@@ -463,6 +463,7 @@ class L1SkillStop {
 		} else if (skillId == SHOCK_STUN || skillId == MASS_SHOCK_STUN) {
 			if (cha instanceof L1PcInstance) {
 				L1PcInstance pc = (L1PcInstance) cha;
+				pc.setParalyzed(false);
 				pc.sendPackets(new S_Paralysis(S_Paralysis.TYPE_STUN, false));
 			} else if (cha instanceof L1MonsterInstance
 					|| cha instanceof L1SummonInstance

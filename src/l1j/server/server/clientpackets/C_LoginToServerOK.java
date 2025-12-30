@@ -33,6 +33,7 @@ public class C_LoginToServerOK extends ClientBasePacket {
 		int type = readC();
 		int button = readC();
 
+		System.out.println("Hey it logged in okay.");
 		L1PcInstance pc = client.getActiveChar();
 
 		if (type == 255) { // Whisper

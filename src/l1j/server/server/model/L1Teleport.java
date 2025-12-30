@@ -187,7 +187,25 @@ public class L1Teleport {
 	}
 
 	public static void randomTeleport(L1PcInstance pc, boolean effectable) {
-		L1Location newLocation = pc.getLocation().randomLocation(200, true);
+		L1Location newLocation = null;
+		int maxRetries = 20;
+		int attempts = 0;
+
+		while (attempts < maxRetries) {
+			attempts++;
+			newLocation = pc.getLocation().randomLocation(200, true);
+			if (newLocation == null) continue;
+
+			if (newLocation.getX() != pc.getX() || newLocation.getY() != pc.getY() || newLocation.getMapId() != pc.getMapId()) {
+				break;
+			}
+		}
+
+		if (newLocation == null || (newLocation.getX() == pc.getX() && newLocation.getY() == pc.getY() && newLocation.getMapId() == pc.getMapId())) {
+			System.out.println("Random teleport failed after " + attempts + " attempts. Staying in place.");
+			newLocation = new L1Location(pc.getX(), pc.getY(), pc.getMapId());
+		}
+
 		int newX = newLocation.getX();
 		int newY = newLocation.getY();
 		short mapId = (short) newLocation.getMapId();

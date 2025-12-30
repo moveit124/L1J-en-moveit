@@ -342,8 +342,10 @@ public final class Config {
 	public static boolean ALT_HALLOWEENEVENT;
 	
 	public static boolean ALT_HALLOWEENEVENTNPC;
-	
+
 	public static boolean ALT_POLYEVENT;
+	
+	public static boolean BKLM_EVENT;
 	
 	public static boolean ALT_JPPRIVILEGED;
 
@@ -970,6 +972,8 @@ public final class Config {
 					"HalloweenEventNpc", "False"));
 			ALT_POLYEVENT = Boolean.parseBoolean(altSettings.getProperty(
 					"PolyEvent", "False"));
+			BKLM_EVENT = Boolean.parseBoolean(altSettings.getProperty(
+					"BKLMEvent", "False"));
 			ALT_BOSS_EVENT = Boolean.parseBoolean(altSettings.getProperty(
 					"BossEvent", "False"));
 			ALT_BOSS_EVENT_BOSSES = altSettings.getProperty(

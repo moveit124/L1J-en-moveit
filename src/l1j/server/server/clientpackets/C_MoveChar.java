@@ -42,6 +42,7 @@ import l1j.server.server.model.trap.L1WorldTraps;
 import l1j.server.server.network.Client;
 import l1j.server.server.serverpackets.S_MoveCharPacket;
 import l1j.server.server.serverpackets.S_NPCPack;
+import l1j.server.server.serverpackets.S_OwnCharStatus;
 
 // Referenced classes of package l1j.server.server.clientpackets:
 // ClientBasePacket
@@ -73,7 +74,13 @@ public class C_MoveChar extends ClientBasePacket {
 			_log.warn("Check of zone type and resetting aggressive act failed.", ex);
 		}
 		
-		if (pc.isTeleport() || pc.isParalyzed()) {
+		if (pc.isTeleport() || pc.isParalyzed() || pc.isSleeped()) {
+			return;
+		}
+
+		if (System.currentTimeMillis() - pc.getLastWeaponSwapTime() < 250) {
+			L1Teleport.teleport(pc, pc.getX(), pc.getY(), pc.getMapId(), 5,
+					false);
 			return;
 		}
 

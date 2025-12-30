@@ -31,6 +31,7 @@ import static l1j.server.server.model.skill.L1SkillId.STATUS_CURSE_YAHEE;
 import static l1j.server.server.model.skill.L1SkillId.STATUS_HASTE;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
@@ -630,7 +631,7 @@ public class C_NpcAction extends ClientBasePacket {
 					htmlid = "";
 				}
 			}
-		} else if (s.equalsIgnoreCase("declare")) {
+		} else if (s.equalsIgnoreCase("declarewar")) {
 			L1Clan clan = L1World.getInstance().getClan(pc.getClanname());
 			System.out.println("npcid = " + npcid);
 			System.out.println("classId = " + pc.getClassId());
@@ -657,16 +658,76 @@ public class C_NpcAction extends ClientBasePacket {
 				pc.sendPackets(new S_War(1, clan.getClanName(),
 						getDefenseClanName(L1CastleLocation.GIRAN_CASTLE_ID)));
 				WarTimeController.getInstance();
-			}else if (npcid == 70857 
+			} else if (npcid == 70857 
 			        && (pc.getClassId() == 0 || pc.getClassId() == 1)
 			        && isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID)) {
 
 			    String attackerClan = clan.getClanName();
 			    String defenderClan = getDefenseClanName(L1CastleLocation.HEINE_CASTLE_ID);
 
+			    System.out.println("[DeclareWar] Attempting war: " + attackerClan + " vs " + defenderClan);
+
+			    if (attackerClan.equalsIgnoreCase(defenderClan)) {
+			        pc.sendPackets(new S_SystemMessage("\\fYYou cannot war your own blood pledge."));
+			        System.out.println("[DeclareWar] Failed: Attempted to declare on own clan.");
+			        return;
+			    }
+
+			    L1Clan enemyClan = L1World.getInstance().getClan(defenderClan);
+			    if (enemyClan != null && enemyClan.getCastleId() != 0) {
+			        int castleId = enemyClan.getCastleId();
+			        if (WarTimeController.getInstance().isNowWar(castleId)) {
+			            for (L1PcInstance member : clan.getOnlineClanMember()) {
+			                if (member.getId() == pc.getId()) continue;
+
+			                if (L1CastleLocation.checkInWarArea(castleId, member)) {
+			                	if (member.getClanRank() != 4) {
+			                		pc.sendPackets(new S_SystemMessage("Failed: Member " + member.getName() + " is in war area."));
+			                		System.out.println("[DeclareWar] Failed: Member " + member.getName() + " is in war area.");
+			                		return;
+			                	}
+			                }
+			            }
+			        }
+
+			        L1PcInstance[] clanMembersOnline = pc.getClan().getOnlineClanMember();
+			        int onlineMeetingLevelReq = 0;
+
+			        for (L1PcInstance member : clanMembersOnline) {
+			            if (member.getLevel() >= Config.CASTLE_WAR_MIN_PRINCE_LEVEL &&
+			                member.getId() != pc.getId()) {
+			                onlineMeetingLevelReq++;
+			            }
+			        }
+
+			        if (pc.getLevel() < Config.CASTLE_WAR_MIN_PRINCE_LEVEL ||
+			            onlineMeetingLevelReq < Config.CASTLE_WAR_MIN_MEMBERS_ONLINE) {
+
+			            pc.sendPackets(new S_SystemMessage("\\fYCannot declare war on a castle pledge because:"));
+
+			            if (pc.getLevel() < Config.CASTLE_WAR_MIN_PRINCE_LEVEL) {
+			                pc.sendPackets(new S_SystemMessage(String.format(
+			                    "\\fY  You are not above level %d.",
+			                    Config.CASTLE_WAR_MIN_PRINCE_LEVEL)));
+			                System.out.println("[DeclareWar] Failed: Prince level too low.");
+			            }
+
+			            if (onlineMeetingLevelReq < Config.CASTLE_WAR_MIN_MEMBERS_ONLINE) {
+			                pc.sendPackets(new S_SystemMessage(String.format(
+			                    "\\fY  You must have %d members online above level %d.",
+			                    Config.CASTLE_WAR_MIN_MEMBERS_ONLINE,
+			                    Config.CASTLE_WAR_MIN_MEMBERS_LEVEL)));
+			                System.out.println("[DeclareWar] Failed: Not enough online members. Found: " + onlineMeetingLevelReq);
+			            }
+
+			            return;
+			        }
+			    }
+
 			    boolean foundExistingWar = false;
 			    for (L1War war : L1World.getInstance().getWarList()) {
 			        if (war.CheckClanInWar(defenderClan)) {
+			            System.out.println("[DeclareWar] Found existing war, declaring from " + attackerClan);
 			            war.DeclareWar(attackerClan, defenderClan);
 			            war.AddAttackClan(attackerClan);
 			            foundExistingWar = true;
@@ -675,6 +736,7 @@ public class C_NpcAction extends ClientBasePacket {
 			    }
 
 			    if (!foundExistingWar) {
+			        System.out.println("[DeclareWar] No war found. Creating new war: " + attackerClan + " vs " + defenderClan);
 			        new L1War().handleCommands(1, attackerClan, defenderClan);
 			    }
 			}  else if (npcid == 60530 || npcid == 60531 && pc.getClassId() == 1
@@ -1040,6 +1102,11 @@ public class C_NpcAction extends ClientBasePacket {
 					|| npcid == 50019 || npcid == 50062) {
 				htmlid = watchUb(pc, npcid);
 			} else if (npcid == 71251) {
+				if (pc.getElixirStats() > 0 && pc.getTotalElixirAlloc() < pc.getElixirStats() && pc.isGm()) {
+				    pc.sendPackets(new S_SystemMessage("You must assign your elixir points using -elixir before starting the reset."));
+				    return;
+				}
+
 				if (!pc.getInventory().checkItem(49142)) {
 					pc.sendPackets(new S_ServerMessage(1290));
 					return;
@@ -4640,29 +4707,52 @@ public class C_NpcAction extends ClientBasePacket {
 					} else {
 						price = 20_000_000;
 					}
-					int taxAmount = price / 20; // 5% tax
+					int fullTax = price / 20;
+					int interval = Config.HOUSE_TAX_INTERVAL;
+					int maxDaysRemaining = (int) Math.floor(interval * 0.7);
 
-					if (pc.getInventory().checkItem(L1ItemId.ADENA, taxAmount)) {
-						pc.getInventory().consumeItem(L1ItemId.ADENA, taxAmount);
-						TimeZone tz = TimeZone.getTimeZone(Config.TIME_ZONE);
-						Calendar cal = Calendar.getInstance(tz);
-						cal.add(Calendar.DATE, Config.HOUSE_TAX_INTERVAL);
-						cal.set(Calendar.MINUTE, 0);
-						cal.set(Calendar.SECOND, 0);
-						house.setTaxDeadline(cal);
-						HouseTable.getInstance().updateHouse(house);
-					} else {
-						pc.sendPackets(new S_ServerMessage(189));
+					TimeZone tz = TimeZone.getTimeZone(Config.TIME_ZONE);
+					Calendar now = Calendar.getInstance(tz);
+					Calendar deadline = house.getTaxDeadline();
+
+					long millisRemaining = deadline.getTimeInMillis() - now.getTimeInMillis();
+					int daysRemaining = (int) Math.ceil(millisRemaining / (1000.0 * 60 * 60 * 24));
+
+					if (daysRemaining >= maxDaysRemaining) {
+						pc.sendPackets(new S_SystemMessage("It is too early to pay your house taxes."));
+						return;
 					}
+
+					int daysToExtend = interval - daysRemaining;
+					int proratedTax = (int) Math.ceil(fullTax * (daysToExtend / (double) interval));
+					if (!pc.getInventory().checkItem(L1ItemId.ADENA, proratedTax)) {
+						pc.sendPackets(new S_ServerMessage(189));
+						return;
+					}
+
+					pc.getInventory().consumeItem(L1ItemId.ADENA, proratedTax);
+
+					Calendar newDeadline = (Calendar) deadline.clone();
+					newDeadline.add(Calendar.DATE, daysToExtend);
+					newDeadline.set(Calendar.MINUTE, 0);
+					newDeadline.set(Calendar.SECOND, 0);
+					house.setTaxDeadline(newDeadline);
+					HouseTable.getInstance().updateHouse(house);
+
+					SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy @ HH:mm");
+					sdf.setTimeZone(tz);
+					String formattedDate = new SimpleDateFormat("MMMM d 'at' HH:mm 'EST'").format(newDeadline.getTime());
+
+					pc.sendPackets(new S_SystemMessage("You paid " + String.format("%,d", proratedTax) + " adena. Due date extended by " + daysToExtend + " days."));
+					pc.sendPackets(new S_SystemMessage("Next house taxes due on " + formattedDate + "."));
 				}
 			}
 		}
 	}
 
-
 	private String[] makeHouseTaxStrings(L1PcInstance pc, L1NpcInstance npc) {
 		String name = npc.getNpcTemplate().get_name();
-		String[] result = new String[] { name, "2000", "1", "1", "00" }; // default
+		String[] result = new String[] { name, "2000", "1", "1", "00" }; // default fallback
 
 		L1Clan clan = L1World.getInstance().getClan(pc.getClanname());
 		int npcid = npc.getNpcTemplate().get_npcId();
@@ -4681,12 +4771,29 @@ public class C_NpcAction extends ClientBasePacket {
 					} else {
 						price = 20_000_000;
 					}
-					int taxAmount = price / 20;
+					int fullTax = price / 20;
+					int interval = Config.HOUSE_TAX_INTERVAL;
+					int maxDaysRemaining = (int) Math.floor(interval * 0.7);
 
-					Calendar cal = house.getTaxDeadline();
-					int month = cal.get(Calendar.MONTH) + 1;
-					int day = cal.get(Calendar.DATE);
-					int hour = cal.get(Calendar.HOUR_OF_DAY);
+					TimeZone tz = TimeZone.getTimeZone(Config.TIME_ZONE);
+					Calendar now = Calendar.getInstance(tz);
+					Calendar deadline = house.getTaxDeadline();
+
+					long millisRemaining = deadline.getTimeInMillis() - now.getTimeInMillis();
+					int daysRemaining = (int) Math.ceil(millisRemaining / (1000.0 * 60 * 60 * 24));
+
+					int taxAmount;
+					if (daysRemaining >= maxDaysRemaining) {
+						taxAmount = fullTax; // too early, display full tax
+					} else {
+						int daysToExtend = interval - daysRemaining;
+						taxAmount = (int) Math.ceil(fullTax * (daysToExtend / (double) interval));
+					}
+
+					int month = deadline.get(Calendar.MONTH) + 1;
+					int day = deadline.get(Calendar.DATE);
+					int hour = deadline.get(Calendar.HOUR_OF_DAY);
+
 					result = new String[] {
 						name,
 						String.valueOf(taxAmount),
@@ -4699,6 +4806,7 @@ public class C_NpcAction extends ClientBasePacket {
 		}
 		return result;
 	}
+
 
 
 	private String[] makeWarTimeStrings(int castleId) {

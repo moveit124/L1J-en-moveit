@@ -42,6 +42,7 @@ import l1j.server.server.datatables.SpawnTable;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.network.Client;
 import l1j.server.server.network.NetworkServer;
 import l1j.server.server.templates.L1PetType;
@@ -165,6 +166,8 @@ public class GameServer extends Thread {
 		PetTypeTable.load();
 		PetItemTable.getInstance();
 		
+		//Load Royal Buff NPC's for war
+        L1TowerInstance.initializeRegenNpcs();
 		
 		// Load treasure box data
 		_log.info("Loading treasure box data...");

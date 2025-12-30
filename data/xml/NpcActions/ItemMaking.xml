@@ -2987,6 +2987,28 @@
 		</MakeItem>
 	</Action>
 	<!-- -->
+	<!-- Cold Kiringku Creation -->
+	<Action Name="request cold of kiringku" NpcId="80142">
+		<MakeItem>
+			<Material Amount="2" ItemId="90014"/>      <!-- Snow Crystal -->
+			<Material Amount="1" ItemId="90012"/>      <!-- Sealed Kiringku -->
+			<Material Amount="50000" ItemId="41246"/>  <!-- Crystal -->
+			<Material Amount="5000000" ItemId="40308"/> <!-- Adena -->
+			<Item Amount="1" ItemId="701"/>            <!-- Kiringku of Bitter Cold -->
+		</MakeItem>
+	</Action>
+	
+	<!-- Cold Chainsword Creation -->
+	<Action Name="request cold of chainsword" NpcId="80133">
+		<MakeItem>
+			<Material Amount="2" ItemId="90014"/>      <!-- Snow Crystal -->
+			<Material Amount="1" ItemId="90013"/>      <!-- Sealed Chainsword -->
+			<Material Amount="50000" ItemId="41246"/>  <!-- Crystal -->
+			<Material Amount="5000000" ItemId="40308"/> <!-- Adena -->
+			<Item Amount="1" ItemId="702"/>            <!-- Chainsword of Extreme Cold -->
+		</MakeItem>
+	</Action>
+	<!-- -->
 	<Action Name="request obsidian kiringku" NpcId="80142">
 		<MakeItem>
 			<Material Amount="10" ItemId="40052"/>

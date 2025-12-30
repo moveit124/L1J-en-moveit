@@ -81,12 +81,20 @@ public class Teleportation {
 
 		L1Map map = L1WorldMap.getInstance().getMap(mapId);
 
-		// Simple validation - if coordinates invalid, revert to current position
+		// Original destination
+		x = pc.getTeleportX();
+		y = pc.getTeleportY();
+		mapId = pc.getTeleportMapId();
+		map = L1WorldMap.getInstance().getMap(mapId);
+
+		// Final fallback to current position if all retries failed and not a GM
 		if (!map.isInMap(x, y) && !pc.isGm()) {
 			x = pc.getX();
 			y = pc.getY();
 			mapId = pc.getMapId();
+			map = L1WorldMap.getInstance().getMap(mapId);
 		}
+
 
 		pc.setTeleport(true);
 

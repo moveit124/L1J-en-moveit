@@ -557,6 +557,12 @@ public class L1Spawn extends L1GameTimeAdapter {
 				mob.setHomeY(newlocy);
 
 				if (mob.getMap().isInMap(mob.getLocation()) && mob.getMap().isPassable(mob.getLocation())) {
+					// Special case: retry if landing in safe zone and is BKLM protestor or captain
+					if ((mob.getNpcId() == 101007 || mob.getNpcId() == 101008) && mob.getMap().isSafetyZone(mob.getLocation())) {
+						tryCount++;
+						continue; // retry spawn
+					}
+					
 					if (mob instanceof L1MonsterInstance) {
 						if (isRespawnScreen()) break;
 						if (L1World.getInstance().getVisiblePlayer((L1MonsterInstance) mob).isEmpty()) break;

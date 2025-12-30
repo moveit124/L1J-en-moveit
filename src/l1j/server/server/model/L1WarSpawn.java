@@ -27,6 +27,7 @@ import l1j.server.server.datatables.NpcTable;
 import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.Instance.L1TowerInstance;
 import l1j.server.server.serverpackets.S_NPCPack;
 import l1j.server.server.templates.L1Npc;
 
@@ -70,6 +71,7 @@ public class L1WarSpawn {
 	        spawnSubTower();
 	    }
 	}
+
 
 
 	private void spawnSubTower() {

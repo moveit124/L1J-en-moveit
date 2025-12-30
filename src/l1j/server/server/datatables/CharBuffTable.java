@@ -18,6 +18,7 @@
  */
 package l1j.server.server.datatables;
 
+import static l1j.server.server.model.skill.L1SkillId.PLAYERSTATUS_HPBAR;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_0_N;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_0_S;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_1_N;
@@ -93,9 +94,9 @@ public class CharBuffTable {
 			COOKING_3_0_N, COOKING_3_0_S, COOKING_3_1_N, COOKING_3_1_S,
 			COOKING_3_2_N, COOKING_3_2_S, COOKING_3_3_N, COOKING_3_3_S,
 			COOKING_3_4_N, COOKING_3_4_S, COOKING_3_5_N, COOKING_3_5_S,
-			COOKING_3_6_N, COOKING_3_6_S };
+			COOKING_3_6_N, COOKING_3_6_S, PLAYERSTATUS_HPBAR };
 
-	private static void StoreBuff(int objId, int skillId, int time, int polyId) {
+	public static void StoreBuff(int objId, int skillId, int time, int polyId) {
 		java.sql.Connection con = null;
 		PreparedStatement pstm = null;
 

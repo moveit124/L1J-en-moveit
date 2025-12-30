@@ -70,10 +70,16 @@ public class NpcSpawnTable {
 						continue;
 					}
 				}
-				if (Config.HALLOWEEN_EVENT == false) {
+				if (!Config.HALLOWEEN_EVENT) {
 					int npcid = rs.getInt("id");
 					if (((npcid >= 130852) && (npcid <= 130862)) || ((npcid >= 26656) && (npcid <= 26734)) 
 						|| ((npcid >= 89634) && (npcid <= 89644))) {
+						continue;
+					}
+				}
+				if (Config.BKLM_EVENT == false ) {
+					int npcid = rs.getInt("id");
+					if (npcid == 101007 || npcid == 101008) {
 						continue;
 					}
 				}

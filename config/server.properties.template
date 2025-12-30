@@ -14,9 +14,9 @@ Driver=com.mysql.cj.jdbc.Driver
 #Driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 URL=jdbc:mysql://localhost:3306/soadb?useSSL=false&serverTimezone=UTC
 #URL=jdbc:hsqldb:hsql://localhost/l1jdb
-#URL=jdbc:sqlserver://localhost/database=l1jdb/user=sa/password=
+#URL=jdbc:sqlserver://localhost/database=l1jdb/user=sa/password=password
 Login=root
-Password=mountaintop42
+Password=password
 
 # Password Salt
 # Salt value applied to all passwords.

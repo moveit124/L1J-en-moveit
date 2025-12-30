@@ -18,6 +18,7 @@
 package l1j.server.server.clientpackets;
 
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_0_N;
+import static l1j.server.server.model.skill.L1SkillId.PLAYERSTATUS_HPBAR;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_0_S;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_6_N;
 import static l1j.server.server.model.skill.L1SkillId.COOKING_1_6_S;
@@ -99,7 +100,9 @@ import l1j.server.Config;
 import l1j.server.L1DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.GMCommands;
+import l1j.server.server.PCommands;
 import l1j.server.server.command.L1Commands;
+import l1j.server.server.controllers.CrackOfTimeController;
 import l1j.server.server.controllers.JailController;
 import l1j.server.server.controllers.JailController.JailInfo;
 import l1j.server.server.controllers.WarTimeController;
@@ -115,6 +118,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.L1Cooking;
 import l1j.server.server.model.L1Cube;
 import l1j.server.server.model.L1CurseParalysis;
+import l1j.server.server.model.L1FourthOfJulyEvent;
 import l1j.server.server.model.L1PolyMorph;
 import l1j.server.server.model.L1War;
 import l1j.server.server.model.L1World;
@@ -290,7 +294,7 @@ public class C_LoginToServer extends ClientBasePacket {
 		pc.sendPackets(s_charTitle);
 		pc.broadcastPacket(s_charTitle);
 
-		updateIcons(pc);
+		//updateIcons(pc);
 		pc.sendVisualEffectAtLogin();
 		
 		pc.sendPackets(new S_Weather(L1World.getInstance().getWeather()));
@@ -420,7 +424,17 @@ public class C_LoginToServer extends ClientBasePacket {
 				pc.sendPackets(new S_SystemMessage("\\fRWill be unjailed in: " + jailInfo.getReleaseTimeFormatted()));
 			}
 		}
+		
+		if (Config.BKLM_EVENT) {
+			pc.sendPackets(new S_SystemMessage(L1FourthOfJulyEvent.getCurrentBonusMessage()));
+		}
+		
 		pc.checkPersistentMute(pc);
+		pc.startBotTracking();
+
+		if (CrackOfTimeController.getCrackOfTimeStatus()) {
+			pc.sendPackets(new S_SystemMessage("The Crack of Time is open."));	
+		}
 
 		long lastReport = LogReporterTable.getLastSuspicion(pc.getId());
 		long lastReportEndTime = lastReport + (Config.REPORT_TIME_MINUTES * 60000);
@@ -773,6 +787,8 @@ public class C_LoginToServer extends ClientBasePacket {
 				} else if (skillid == STATUS_DESTRUCTION_NOSTRUM) { // 破壊の秘薬
 					pc.sendPackets(new S_SkillIconAura(221, remaining_time, 6));
 					pc.setSkillEffect(skillid, remaining_time * 1000);
+				} else if (skillid == PLAYERSTATUS_HPBAR) {
+				    PCommands.hpbar(pc, "on");
 				}/* else if (skillid == STATUS_EXP_UP) { // 祈りのポーション
 					L1ExtraPotion potion = L1ExtraPotion.get(50616);
 					pc.addExpBonusPct(potion.getEffect().getExp());

@@ -72,6 +72,7 @@ import l1j.server.server.encryptions.IdFactory;
 import l1j.server.server.model.Dungeon;
 import l1j.server.server.model.ElementalStoneGenerator;
 import l1j.server.server.model.Getback;
+import l1j.server.server.model.L1FourthOfJulyEvent;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1World;
 import l1j.server.server.model.gametime.L1GameTimeClock;
@@ -225,5 +226,9 @@ public class GameServerThread {
 		UBTable.getInstance();
 		//L1DeleteItemOnGround.getInstance();
 		L1MapLimiter.load();
+		if (!Config.BKLM_EVENT) {
+			L1FourthOfJulyEvent.resetEvent();
+		}
+		L1FourthOfJulyEvent.loadEventKillCountsFromDB();
 	}
 }

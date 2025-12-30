@@ -82,6 +82,7 @@ import l1j.server.server.serverpackets.S_MPUpdate;
 import l1j.server.server.serverpackets.S_Message_YN;
 import l1j.server.server.serverpackets.S_NpcChatPacket;
 import l1j.server.server.serverpackets.S_OwnCharAttrDef;
+import l1j.server.server.serverpackets.S_OwnCharPack;
 import l1j.server.server.serverpackets.S_OwnCharStatus;
 import l1j.server.server.serverpackets.S_PacketBox;
 import l1j.server.server.serverpackets.S_Paralysis;
@@ -225,10 +226,11 @@ public class L1SkillUse {
 			_target = _cha;
 		}
 
-		public TargetStatus(L1Character _cha, boolean _flg) {
-			_isCalc = _flg;
+		public TargetStatus(L1Character cha, boolean flg) {
+			_target = cha;       // ✅ THIS LINE WAS MISSING
+			_isCalc = flg;
 		}
-
+		
 		public L1Character getTarget() {
 			return _target;
 		}
@@ -465,6 +467,14 @@ public class L1SkillUse {
 				pc.sendPackets(new S_SystemMessage("You cannot use awakening magic in the current condition.")); // You cannot use awakening magic in the current condition.
 				return false;
 			}
+			
+			// Prevent using awakening-exclusive spells unless currently awakened
+			if ((_skillId == SHOCK_SKIN || _skillId == MAGMA_BREATH)
+			        && pc.getAwakeSkillId() == 0) {
+			    pc.sendPackets(new S_SystemMessage("You can only use this skill while awakened."));
+			    return false;
+			}
+
 
 			if (_skillId == SOLID_CARRIAGE && pcInventory.getTypeEquipped(2, 7) == 0) {
 				pc.sendPackets(new S_SystemMessage("You cannot cast magic in that condition.")); // You cannot cast magic in that condition.
@@ -865,107 +875,96 @@ public class L1SkillUse {
 
 	private void makeTargetList() {
 		try {
-			if (_type == TYPE_LOGIN) {
+			if (_type == TYPE_LOGIN) { // ログイン時(死亡時、お化け屋敷のキャンセレーション含む)は使用者のみ
 				_targetList.add(new TargetStatus(_user));
 				return;
 			}
 			if (_skill.getTargetTo() == L1Skill.TARGET_TO_ME
 					&& (_skill.getType() & L1Skill.TYPE_ATTACK) != L1Skill.TYPE_ATTACK) {
-				_targetList.add(new TargetStatus(_user));
+				_targetList.add(new TargetStatus(_user)); // ターゲットは使用者のみ
 				return;
 			}
 
-			if (_user.getLocation().getMapId() != _target.getLocation().getMapId()) {
-				return;
-			}
+			// 射程距離-1の場合は画面内のオブジェクトが対象
 			if (_skill.getRanged() != -1) {
-				if (_user.getLocation().getTileLineDistance(_target.getLocation()) > _skill.getRanged()) {
-					return;
+				if (_user.getLocation().getTileLineDistance(
+						_target.getLocation()) > _skill.getRanged()) {
+					return; // 射程範囲外
 				}
 			} else {
 				if (!_user.getLocation().isInScreen(_target.getLocation())) {
-					return;
+					return; // 射程範囲外
 				}
 			}
 
-			if (isTarget(_target) == false && !(_skill.getTarget().equals("none"))) {
+			if (isTarget(_target) == false
+					&& !(_skill.getTarget().equals("none"))) {
+				// 対象が違うのでスキルが発動しない。
 				return;
 			}
 
-			if (_skillId == LIGHTNING || _skillId == FREEZING_BREATH) {
-				ArrayList<L1Object> al1object = L1World.getInstance().getVisibleLineObjects(_user, _target);
+			if (_skillId == LIGHTNING) { // ライトニング 直線的に範囲を決める
+				ArrayList<L1Object> al1object = L1World.getInstance()
+						.getVisibleLineObjects(_user, _target);
 
 				for (L1Object tgobj : al1object) {
 					if (tgobj == null) {
 						continue;
 					}
-					if (!(tgobj instanceof L1Character)) {
+					if (!(tgobj instanceof L1Character)) { // ターゲットがキャラクター以外の場合何もしない。
 						continue;
 					}
 					L1Character cha = (L1Character) tgobj;
 					if (isTarget(cha) == false) {
 						continue;
 					}
-
-					// invul gms are not valid targets!
-					if (tgobj instanceof L1PcInstance && (((L1PcInstance) tgobj).isGmInvul()))
-						continue;
-
 					_targetList.add(new TargetStatus(cha));
 				}
 				return;
 			}
 
-			if (_skill.getArea() == 0) {
-				if (!_user.glanceCheck(_target.getX(), _target.getY())) {
-					if ((_skill.getType() & L1Skill.TYPE_ATTACK) == L1Skill.TYPE_ATTACK && _skillId != 10026
-							&& _skillId != 10027 && _skillId != 10028 && _skillId != 10029) {
-
-						// don't allow hitting a GM in invul!
-						if (!(_target instanceof L1PcInstance && (((L1PcInstance) _target).isGmInvul())))
-							_targetList.add(new TargetStatus(_target, false));
-
+			if (_skill.getArea() == 0) { // 単体の場合
+				if (!(_user.glanceCheck(_user.getX(), _user.getY(), _target.getX(), _target.getY())
+								|| _user.glanceCheck(_target.getX(), _target.getY(), _user.getX(), _user.getY()))) { // 直線上に障害物があるか
+					if ((_skill.getType() & L1Skill.TYPE_ATTACK) == L1Skill.TYPE_ATTACK
+							&& _skillId != 10026
+							&& _skillId != 10027
+							&& _skillId != 10028 && _skillId != 10029) { // 安息攻撃以外の攻撃スキル
+						_targetList.add(new TargetStatus(_target, false)); // ダメージも発生しないし、ダメージモーションも発生しないが、スキルは発動
 						return;
 					}
 				}
-
-				// don't allow hitting a GM in invul!
-				if (!(_target instanceof L1PcInstance && (((L1PcInstance) _target).isGmInvul())))
-					_targetList.add(new TargetStatus(_target));
-			} else {
+				_targetList.add(new TargetStatus(_target));
+			} else { // 範囲の場合
 				if (!_skill.getTarget().equals("none")) {
 					_targetList.add(new TargetStatus(_target));
 				}
 
 				if (_skillId != 49
-						&& !(_skill.getTarget().equals("attack") || _skill.getType() == L1Skill.TYPE_ATTACK)) {
-
-					// don't allow hitting a GM in invul!
-					if (!(_user instanceof L1PcInstance && (((L1PcInstance) _user).isGmInvul())))
-						_targetList.add(new TargetStatus(_user));
+						&& !(_skill.getTarget().equals("attack") || _skill
+								.getType() == L1Skill.TYPE_ATTACK)) {
+					// 攻撃系以外のスキルとH-A以外はターゲット自身を含める
+					_targetList.add(new TargetStatus(_user));
 				}
 
 				List<L1Object> objects;
 				if (_skill.getArea() == -1) {
 					objects = L1World.getInstance().getVisibleObjects(_user);
 				} else {
-					objects = L1World.getInstance().getVisibleObjects(_target, _skill.getArea());
+					objects = L1World.getInstance().getVisibleObjects(_target,
+							_skill.getArea());
 				}
 				for (L1Object tgobj : objects) {
 					if (tgobj == null) {
 						continue;
 					}
-					if (!(tgobj instanceof L1Character)) {
+					if (!(tgobj instanceof L1Character)) { // ターゲットがキャラクター以外の場合何もしない。
 						continue;
 					}
 					L1Character cha = (L1Character) tgobj;
 					if (!isTarget(cha)) {
 						continue;
 					}
-
-					// don't allow hitting a GM in invul!
-					if (tgobj instanceof L1PcInstance && (((L1PcInstance) tgobj).isGmInvul()))
-						continue;
 
 					_targetList.add(new TargetStatus(cha));
 				}
@@ -1227,7 +1226,6 @@ public class L1SkillUse {
 			return;
 
 		cha.setSkillEffect(_skillId, buffDuration);
-
 		if (cha instanceof L1PcInstance && repetition) {
 			L1PcInstance pc = (L1PcInstance) cha;
 			sendIcon(pc);
@@ -1236,6 +1234,8 @@ public class L1SkillUse {
 
 	private void sendIcon(L1PcInstance pc) {
 		int buffIconDuration = _skillTime == 0 ? _skill.getBuffDuration() : _skillTime;
+		//System.out.println("sendIcon called for: " + pc.getName() + ", skillId=" + _skillId);
+
 
 		switch (_skillId) {
 		case SHIELD:
@@ -1250,41 +1250,137 @@ public class L1SkillUse {
 		case DRESS_MIGHTY:
 			pc.sendPackets(new S_Strup(pc, 2, buffIconDuration));
 			break;
+			//Dont ask me why but this fixed the buff icon problem...
 		case GLOWING_AURA:
-			pc.sendPackets(new S_SkillIconAura(113, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(113, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case SHINING_AURA:
-			pc.sendPackets(new S_SkillIconAura(114, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(114, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case BRAVE_AURA:
-			pc.sendPackets(new S_SkillIconAura(116, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(116, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case FIRE_WEAPON:
-			pc.sendPackets(new S_SkillIconAura(147, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(147, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case WIND_SHOT:
-			pc.sendPackets(new S_SkillIconAura(148, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(148, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case FIRE_BLESS:
-			pc.sendPackets(new S_SkillIconAura(154, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(154, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case STORM_EYE:
-			pc.sendPackets(new S_SkillIconAura(155, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(155, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case EARTH_BLESS:
-			pc.sendPackets(new S_SkillIconShield(7, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconShield(7, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case BURNING_WEAPON:
-			pc.sendPackets(new S_SkillIconAura(162, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(162, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case STORM_SHOT:
-			pc.sendPackets(new S_SkillIconAura(165, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconAura(165, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case IRON_SKIN:
-			pc.sendPackets(new S_SkillIconShield(10, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconShield(10, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
+
 		case EARTH_SKIN:
-			pc.sendPackets(new S_SkillIconShield(6, buffIconDuration));
+			new Thread(() -> {
+				try {
+					Thread.sleep(50);
+					pc.sendPackets(new S_SkillIconShield(6, buffIconDuration));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}).start();
 			break;
 		case PHYSICAL_ENCHANT_STR:
 			pc.sendPackets(new S_Strup(pc, 5, buffIconDuration));
@@ -1393,30 +1489,41 @@ public class L1SkillUse {
 						return;
 					}
 				}
-				if (_skill.getArea() == 0) {
-					if (_skillId == MIND_BREAK || _skillId == CONFUSION || _skillId == JOY_OF_PAIN) {
-						_player.sendPackets(new S_SkillSound(targetid, castgfx));
-						_player.broadcastPacket(new S_SkillSound(targetid, castgfx));
-						S_DoActionGFX gfx = new S_DoActionGFX(_player.getId(), actionId);
+				if (_skill.getArea() == 0) { // 単体攻撃魔法
+					if (_skillId == MIND_BREAK || _skillId == CONFUSION
+							|| _skillId == JOY_OF_PAIN) {
+						_player
+						.sendPackets(new S_SkillSound(targetid, castgfx));
+						_player.broadcastPacket(new S_SkillSound(targetid,
+								castgfx));
+						S_DoActionGFX gfx = new S_DoActionGFX(_player.getId(),
+								actionId);
 						_player.sendPackets(gfx);
 						_player.broadcastPacket(gfx);
 					} else {
-						_player.sendPackets(
-								new S_UseAttackSkill(_player, targetid, castgfx, _targetX, _targetY, actionId));
-						_player.broadcastPacket(
-								new S_UseAttackSkill(_player, targetid, castgfx, _targetX, _targetY, actionId));
-						_target.broadcastPacketExceptTargetSight(new S_DoActionGFX(targetid, ActionCodes.ACTION_Damage),
-								_player);
+						_player
+						.sendPackets(new S_UseAttackSkill(_player,
+								targetid, castgfx, _targetX, _targetY,
+								actionId));
+						_player
+						.broadcastPacket(new S_UseAttackSkill(_player,
+								targetid, castgfx, _targetX, _targetY,
+								actionId));
+						_target.broadcastPacketExceptTargetSight(
+								new S_DoActionGFX(targetid,
+										ActionCodes.ACTION_Damage), _player);
 					}
-				} else {
+				} else { // 有方向範囲攻撃魔法
 					L1Character[] cha = new L1Character[_targetList.size()];
 					int i = 0;
 					for (TargetStatus ts : _targetList) {
 						cha[i] = ts.getTarget();
 						i++;
 					}
-					_player.sendPackets(new S_RangeSkill(_player, cha, castgfx, actionId, S_RangeSkill.TYPE_DIR));
-					_player.broadcastPacket(new S_RangeSkill(_player, cha, castgfx, actionId, S_RangeSkill.TYPE_DIR));
+					_player.sendPackets(new S_RangeSkill(_player, cha, castgfx,
+							actionId, S_RangeSkill.TYPE_DIR));
+					_player.broadcastPacket(new S_RangeSkill(_player, cha,
+							castgfx, actionId, S_RangeSkill.TYPE_DIR));
 				}
 			} else if (_skill.getTarget().equals("none") && _skill.getType() == L1Skill.TYPE_ATTACK) {
 				L1Character[] cha = new L1Character[_targetList.size()];
@@ -1947,7 +2054,7 @@ private void runSkill() {
 								if (maybeOldTarget instanceof L1PcInstance) {
 									L1PcInstance oldTarget = (L1PcInstance) maybeOldTarget;
 									oldTarget.applyTrueTargetDebuff(0, 0, 0); // Clear bonus and duration
-									System.out.println(String.format("[TrueTarget] Removed previous True Target debuff from %s", oldTarget.getName()));
+									//System.out.println(String.format("[TrueTarget] Removed previous True Target debuff from %s", oldTarget.getName()));
 								}
 							}
 
@@ -1956,7 +2063,7 @@ private void runSkill() {
 							if (bonusPercent > 0) {
 								newTarget.applyTrueTargetDebuff(bonusPercent, 16000, caster.getClanid());
 								caster.setActiveTrueTargetId(newTarget.getId());
-								System.out.println(String.format("[TrueTarget] %s applied new debuff to %s", caster.getName(), newTarget.getName()));
+								//System.out.println(String.format("[TrueTarget] %s applied new debuff to %s", caster.getName(), newTarget.getName()));
 							}
 						}
 
@@ -2158,6 +2265,7 @@ private void runSkill() {
 							cha.getMapId());
 					if (cha instanceof L1PcInstance) {
 						L1PcInstance pc = (L1PcInstance) cha;
+						pc.setParalyzed(true);
 						pc.sendPackets(new S_Paralysis(S_Paralysis.TYPE_STUN, true));
 					} else if (cha instanceof L1MonsterInstance || cha instanceof L1SummonInstance
 							|| cha instanceof L1PetInstance) {
@@ -2507,7 +2615,25 @@ private void runSkill() {
 							}
 						} else {
 							if (pc.getMap().isTeleportable() || pc.isGm()) {
-								L1Location newLocation = pc.getLocation().randomLocation(200, true);
+								L1Location newLocation = null;
+								int maxRetries = 20;
+								int attempts = 0;
+
+								while (attempts < maxRetries) {
+									attempts++;
+									newLocation = pc.getLocation().randomLocation(200, true);
+									if (newLocation == null) continue;
+
+									if (newLocation.getX() != pc.getX() || newLocation.getY() != pc.getY() || newLocation.getMapId() != pc.getMapId()) {
+										break;
+									}
+								}
+
+								if (newLocation == null || (newLocation.getX() == pc.getX() && newLocation.getY() == pc.getY() && newLocation.getMapId() == pc.getMapId())) {
+									System.out.println("Random teleport failed after " + attempts + " attempts. Staying in place.");
+									newLocation = new L1Location(pc.getX(), pc.getY(), pc.getMapId());
+								}
+
 								int newX = newLocation.getX();
 								int newY = newLocation.getY();
 								short mapId = (short) newLocation.getMapId();
@@ -2704,8 +2830,8 @@ private void runSkill() {
 					} else if (_skillId == SHINING_AURA) {
 						L1PcInstance pc = (L1PcInstance) cha;
 						pc.addAc(-8);
-						pc.setSkillEffect(SHINING_AURA, 600000);
-						pc.sendPackets(new S_SkillIconAura(114, 600));
+						pc.sendPackets(new S_SkillIconAura(114, buffIconDuration));
+						sendIcon(pc);
 					} else if (_skillId == BRAVE_AURA) {
 						L1PcInstance pc = (L1PcInstance) cha;
 						pc.addDmgup(5);
@@ -2808,12 +2934,12 @@ private void runSkill() {
 						// this has been changed to US server settings. do not
 						// remove.
 						pc.setCurrentMp(pc.getCurrentMp() + 16);
-					} else if (_skillId == MIND_BREAK) {
+					} /*else if (_skillId == MIND_BREAK) {
 						if (cha.getCurrentMp() > 10) {
 							cha.setCurrentMp(cha.getCurrentMp() - 10);
 							cha.setCurrentHp(cha.getCurrentHp() - 20);
 						}
-					} else if (_skillId == ELEMENTAL_PROTECTION) {
+					} */ else if (_skillId == ELEMENTAL_PROTECTION) {
 						L1PcInstance pc = (L1PcInstance) cha;
 						int attr = pc.getElfAttr();
 						if (attr == Element.Earth) {
@@ -3295,4 +3421,15 @@ private void runSkill() {
 	public void setSkipCastingAnimation(boolean skip) {
 		_skipCastingAnimation = skip;
 	}
+	
+	private boolean _sendingAuraIcon = false;
+
+	public boolean isSendingAuraIcon() {
+		return _sendingAuraIcon;
+	}
+
+	public void setSendingAuraIcon(boolean flag) {
+		_sendingAuraIcon = flag;
+	}
+
 }

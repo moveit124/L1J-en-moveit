@@ -366,6 +366,23 @@ public class L1Character extends L1Object {
 		return false;
 	}
 	
+	public boolean glanceCheck(int chx, int chy, int tx, int ty) {
+		for (int i = 0; i < 15; i++) {
+			if (chx == tx && chy == ty) {
+				break;
+			}
+
+			if (!getMap().isArrowPassable(chx, chy, targetDirection(tx, ty))) {
+				return false;
+			}
+
+			// Targetへ1タイル進める
+			chx += Math.max(-1, Math.min(1, tx - chx));
+			chy += Math.max(-1, Math.min(1, ty - chy));
+		}
+		return true;
+	}
+	
 	private boolean losCheck(int chx, int chy, int tx, int ty) {
 	    for (int i = 0; i < 15; i++) { // Maximum range of 15 tiles (same as JP codebase)
 	        if (chx == tx && chy == ty) {

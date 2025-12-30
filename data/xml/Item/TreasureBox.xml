@@ -5,7 +5,6 @@
 	<!--Chance Unit %(0.0001% Allowed to specify). A total of 100% to be set. -->
 	
 	
-	
 	<!-- diamond kafir pouch -->
 	<TreasureBox Type="RANDOM" ItemId="49005">
 		<Item ItemId="40010" Count="2" Chance="21" />
@@ -1290,5 +1289,87 @@
 	    <Item ItemId="41431" Count="100"></Item>
 	    <Item ItemId="41432" Count="100"></Item>
 	    <Item ItemId="40889" Count="1000"></Item>
+	</TreasureBox>
+	<!--- Crackling Surpise Bag -->
+	<TreasureBox Type="RANDOM" ItemId="90011">
+		<Item ItemId="40136" Count="1" Chance="1" />
+		<Item ItemId="40136" Count="2" Chance="1" />
+		<Item ItemId="40136" Count="3" Chance="1" />
+		<Item ItemId="40137" Count="1" Chance="1" />
+		<Item ItemId="40137" Count="2" Chance="1" />
+		<Item ItemId="40137" Count="3" Chance="1" />
+		<Item ItemId="40138" Count="1" Chance="1" />
+		<Item ItemId="40138" Count="2" Chance="1" />
+		<Item ItemId="40138" Count="3" Chance="1" />
+		<Item ItemId="40139" Count="1" Chance="1" />
+		<Item ItemId="40139" Count="2" Chance="1" />
+		<Item ItemId="40139" Count="3" Chance="1" />
+		<Item ItemId="40140" Count="1" Chance="1" />
+		<Item ItemId="40140" Count="2" Chance="1" />
+		<Item ItemId="40140" Count="3" Chance="1" />
+		<Item ItemId="40141" Count="1" Chance="1" />
+		<Item ItemId="40141" Count="2" Chance="1" />
+		<Item ItemId="40141" Count="3" Chance="1" />
+		<Item ItemId="40142" Count="1" Chance="1" />
+		<Item ItemId="40142" Count="2" Chance="1" />
+		<Item ItemId="40142" Count="3" Chance="1" />
+		<Item ItemId="40143" Count="1" Chance="1" />
+		<Item ItemId="40143" Count="2" Chance="1" />
+		<Item ItemId="40143" Count="3" Chance="1" />
+		<Item ItemId="40144" Count="1" Chance="1" />
+		<Item ItemId="40144" Count="2" Chance="1" />
+		<Item ItemId="40144" Count="3" Chance="1" />
+		<Item ItemId="40145" Count="1" Chance="1" />
+		<Item ItemId="40145" Count="2" Chance="1" />
+		<Item ItemId="40145" Count="3" Chance="1" />
+		<Item ItemId="40146" Count="1" Chance="1" />
+		<Item ItemId="40146" Count="2" Chance="1" />
+		<Item ItemId="40146" Count="3" Chance="1" />
+		<Item ItemId="40147" Count="1" Chance="1" />
+		<Item ItemId="40147" Count="2" Chance="1" />
+		<Item ItemId="40147" Count="3" Chance="1" />
+		<Item ItemId="40148" Count="1" Chance="2" />
+		<Item ItemId="40148" Count="2" Chance="1" />
+		<Item ItemId="40148" Count="3" Chance="1" />
+		<Item ItemId="40149" Count="1" Chance="2" />
+		<Item ItemId="40149" Count="2" Chance="1" />
+		<Item ItemId="40149" Count="3" Chance="1" />
+		<Item ItemId="40150" Count="1" Chance="2" />
+		<Item ItemId="40150" Count="2" Chance="1" />
+		<Item ItemId="40150" Count="3" Chance="1" />
+		<Item ItemId="40151" Count="1" Chance="2" />
+		<Item ItemId="40151" Count="2" Chance="1" />
+		<Item ItemId="40151" Count="3" Chance="1" />
+		<Item ItemId="40152" Count="1" Chance="2" />
+		<Item ItemId="40152" Count="2" Chance="1" />
+		<Item ItemId="40152" Count="3" Chance="1" />
+		<Item ItemId="40153" Count="1" Chance="2" />
+		<Item ItemId="40153" Count="2" Chance="1" />
+		<Item ItemId="40153" Count="3" Chance="1" />
+		<Item ItemId="40154" Count="1" Chance="2" />
+		<Item ItemId="40154" Count="2" Chance="1" />
+		<Item ItemId="40154" Count="3" Chance="1" />
+		<Item ItemId="40155" Count="1" Chance="2" />
+		<Item ItemId="40155" Count="2" Chance="1" />
+		<Item ItemId="40155" Count="3" Chance="1" />
+		<Item ItemId="40156" Count="1" Chance="2" />
+		<Item ItemId="40156" Count="2" Chance="1" />
+		<Item ItemId="40156" Count="3" Chance="1" />
+		<Item ItemId="40157" Count="1" Chance="2" />
+		<Item ItemId="40157" Count="2" Chance="1" />
+		<Item ItemId="40157" Count="3" Chance="1" />
+		<Item ItemId="40158" Count="1" Chance="2" />
+		<Item ItemId="40158" Count="2" Chance="1" />
+		<Item ItemId="40158" Count="3" Chance="1" />
+		<Item ItemId="40159" Count="1" Chance="2" />
+		<Item ItemId="40159" Count="2" Chance="1" />
+		<Item ItemId="40159" Count="3" Chance="1" />
+		<Item ItemId="40160" Count="1" Chance="2" />
+		<Item ItemId="40160" Count="2" Chance="1" />
+		<Item ItemId="40160" Count="3" Chance="1" />
+		<Item ItemId="40161" Count="1" Chance="2" />
+		<Item ItemId="40161" Count="2" Chance="1" />
+		<Item ItemId="40161" Count="3" Chance="1" />
+		<Item ItemId="100010" Count="1" Chance="8" />
 	</TreasureBox>
 </TreasureBoxList>

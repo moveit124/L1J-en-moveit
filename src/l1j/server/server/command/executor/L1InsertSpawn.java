@@ -62,9 +62,17 @@ public class L1InsertSpawn implements L1CommandExecutor {
 				}
 				SpawnTable.storeSpawn(pc, template);
 			} else if (type.equals("npc")) {
-				NpcSpawnTable.getInstance().storeSpawn(template, 1, pc.getX(), pc.getY(), (short)pc.getMapId());
+				NpcSpawnTable.getInstance().storeSpawn(template, 1, pc.getX(), pc.getY(), (short) pc.getMapId());
 			}
+
 			L1SpawnUtil.spawn(pc, npcId, 0, 0);
+
+			System.out.println("[SPAWN] GM " + pc.getName()
+				+ " spawned " + template.getImpl()
+				+ " '" + template.get_name()
+				+ "' (ID: " + npcId + ") at [" + pc.getX()
+				+ ", " + pc.getY() + "] on map " + pc.getMapId());
+
 			msg = new StringBuilder().append(template.get_name())
 					.append(" (" + npcId + ") ").append("B").toString();
 		} catch (Exception e) {

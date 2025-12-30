@@ -838,6 +838,7 @@ public class L1Attack {
 		}
 		if (isKiringku) {
 			damage = L1WeaponSkill.getKiringkuDamage(_pc, _target);
+			damage += weapon.getItem().getMagicDmgModifier();
 			damage += calcAttrEnchantDmg();
 		}
 
@@ -1216,7 +1217,7 @@ public class L1Attack {
 		}
 	}
 
-	public void calcStaffOfMana() {
+	public void calcStaffOfMana(L1Character target) {
 		if (_weaponId == STAFF_OF_MANA || _weaponId == STEEL_STAFF_OF_MANA || _weaponId == ELINDAIRE_STAFF) {
 			// Limit the maximum absorption.
 			int som_lvl = _weaponEnchant + 3;
@@ -1234,15 +1235,20 @@ public class L1Attack {
 		 * can easily adjust it later if we decide this is OP
 		 */
 		else if (_weaponId == DAGGER_OF_MAGIC_POWER) {
-			// Limit the maximum absorption.
-			int som_lvl = _weaponEnchant + 3;
-			if (som_lvl < 0) {
-				som_lvl = 0;
-			}
-			// MP sinks to retrieve random
-			_drainMana = ThreadLocalRandom.current().nextInt(som_lvl) + 1;
-			if (_drainMana > Config.MANA_DRAIN_LIMIT_PER_SOM_ATTACK) {
-				_drainMana = Config.MANA_DRAIN_LIMIT_PER_SOM_ATTACK;
+			int mr = Math.min(target.getMr(), 100);
+			int chance = Math.max(10, 100 - mr); // Inverse MR, but at least 10%
+
+			if (ThreadLocalRandom.current().nextInt(100) < chance) {
+				// Limit the maximum absorption.
+				int som_lvl = _weaponEnchant + 3;
+				if (som_lvl < 0) {
+					som_lvl = 0;
+				}
+				// MP sinks to retrieve random
+				_drainMana = ThreadLocalRandom.current().nextInt(som_lvl) + 1;
+				if (_drainMana > Config.MANA_DRAIN_LIMIT_PER_SOM_ATTACK) {
+					_drainMana = Config.MANA_DRAIN_LIMIT_PER_SOM_ATTACK;
+				}
 			}
 		}
 	}
